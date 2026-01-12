@@ -1,0 +1,13 @@
+hw1: NDC to RGB shader
+
+CSCI4239/5239 Spring 2026
+
+Key bindings
+  m          Toggle shader
+  o          Change objects
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit
+
+Hours Spent: 30 minutes

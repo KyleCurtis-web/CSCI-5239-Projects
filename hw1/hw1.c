@@ -1,16 +1,18 @@
 /*
  *  Homework 1: NDC to RGB shader.
+ * based off of ex01
  *
  *  Key bindings:
  *  m          Toggle shader
  *  o          Change objects
+ *  p          Chenge perspective/orthogonal
  *  arrows     Change view angle
  *  PgDn/PgUp  Zoom in and out
  *  0          Reset view angle
  *  ESC        Exit
  */
 #include "CSCIx239.h"
-int mode=0;    //  Shader
+int mode=1;    //  Shader
 int th=0,ph=0; //  View angles
 int fov=57;    //  Field of view (for perspective)
 int tex=0;     //  Texture
@@ -18,7 +20,7 @@ int obj=0;     //  Object
 int shader=0;  //  Shader
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-const char* text[] = {"Fixed Pipeline","Silly Shader"};
+const char* text[] = {"Fixed Pipeline","NDC to RGB Shader"};
 
 //
 //  Refresh display
@@ -43,9 +45,16 @@ void display(GLFWwindow* window)
      glUseProgram(0);
    //  Draw scene
    if (obj)
-     TexturedIcosahedron(tex);
+   {
+       TexturedIcosahedron(tex);
+       Icosahedron(1, 1, 1, 1, 0, 0, tex);
+   }
    else
-     TexturedCube(tex);
+   {
+       TexturedCube(tex);
+       Cube(2, 2, 2, 1, 1, 1, 0, 0, tex);
+       Cube(-2, -2, -2, 1, 1, 1, 0, 0, tex);
+   }
    //  Revert to fixed pipeline
    glUseProgram(0);
 
@@ -54,7 +63,7 @@ void display(GLFWwindow* window)
    //  Display parameters
    SetColor(1,1,1);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f Projection=%s Mode=%s",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode]);
+   Print("Angle=%d,%d Dim=%.1f Projection=%s Mode=%s",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode]);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -132,7 +141,8 @@ int main(int argc,char* argv[])
    GLFWwindow* window = InitWindow("Homework 1: Kyle Curtis",1,600,600,&reshape,&key);
 
    //  Load shader
-   shader = CreateShaderProg("silly.vert","silly.frag");
+   //shader = CreateShaderProg("silly.vert","silly.frag");
+   shader = CreateShaderProg("shader.vert", "shader.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 

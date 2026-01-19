@@ -1,26 +1,30 @@
 /*
- *  Homework 1: NDC to RGB shader.
- * based off of ex01
+ *  Procedural Textures
+ *  Demonstrates the use of shaders to generate textures
  *
  *  Key bindings:
- *  m          Toggle shader
+ *  m          Toggle shaders
  *  o          Change objects
- *  p          Chenge perspective/orthogonal
+ *  xXyYzZ     Change location or zoom
  *  arrows     Change view angle
  *  PgDn/PgUp  Zoom in and out
  *  0          Reset view angle
  *  ESC        Exit
  */
 #include "CSCIx239.h"
-int mode=1;    //  Shader
+int mode=0;    //  Shader
+int move=1;    //  Moving light
+int zh=0;      //  Light position
 int th=0,ph=0; //  View angles
 int fov=57;    //  Field of view (for perspective)
 int tex=0;     //  Texture
 int obj=0;     //  Object
-int shader=0;  //  Shader
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-const char* text[] = {"Fixed Pipeline","NDC to RGB Shader"};
+float X=0,Y=0,Z=1;             //  Location of Object
+#define MODE 7
+int shader[] = {0,0,0,0,0,0,0};  //  Shaders
+const char* text[] = {"None","Stored","Color Wave","Brick","Mandelbrot","Mandelhole","Waves"};
 
 //
 //  Refresh display
@@ -33,35 +37,37 @@ void display(GLFWwindow* window)
    glEnable(GL_DEPTH_TEST);
    //  Set view
    View(th,ph,fov,dim);
+   //  Enable lighting
+   Lighting(3*Cos(zh),1.5,3*Sin(zh) , 0.3,0.5,0.8);
 
-   //  Enable shader
-   if (mode)
+   //  Select shader
+   glUseProgram(shader[mode]);
+   //  Set dimensions for shader 3
+   if (mode>0)
    {
-     glUseProgram(shader); //CHANGED THIS
+      //  Time
+      float t = glfwGetTime();
+      int id = glGetUniformLocation(shader[mode],"time");
+      glUniform1f(id,t);
+      //  Location
+      id = glGetUniformLocation(shader[mode],"loc");
+      glUniform3f(id,X,Y,1/Z);
    }
-   else
-     glUseProgram(0);
-   //  Draw scene CHANGES HERE
-   if (obj)
+   //  Draw scene
+   switch (obj)
    {
-       TexturedIcosahedron(tex);
-       Icosahedron(1, 1, 1, 1, 0, 0, tex);
-   }
-   else
-   {
-       TexturedCube(tex);
-       Cube(2, 2, 2, 1, 1, 1, 0, 0, tex);
-       Cube(-2, -2, -2, 1, 1, 1, 0, 0, tex);
+      case 0: TexturedCube(tex);        break;
+      case 1: TexturedIcosahedron(tex); break;
+      default: TexturedTeapot(8,tex);   break;
    }
    //  Revert to fixed pipeline
    glUseProgram(0);
+   glDisable(GL_LIGHTING);
 
-   //  Display axes
-   Axes(2);
    //  Display parameters
    SetColor(1,1,1);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d Dim=%.1f Projection=%s Mode=%s",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode]);
+   Print("Angle=%d,%d  Dim=%.1f Projection=%s Mode=%s Zoom=%f",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode],Z);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -76,18 +82,34 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Discard key releases (keeps PRESS and REPEAT)
    if (action==GLFW_RELEASE) return;
 
+   //  Check for shift
+   int shift = (mods & GLFW_MOD_SHIFT);
+
    //  Exit on ESC
    if (key == GLFW_KEY_ESCAPE)
-     glfwSetWindowShouldClose(window,1);
-   //  Reset view angle
+      glfwSetWindowShouldClose(window,1);
+   //  Change location
+   else if (key==GLFW_KEY_X)
+      X += shift ? +0.05/Z : -0.05/Z;
+   else if (key==GLFW_KEY_Y)
+      Y += shift ? +0.05/Z : -0.05/Z;
+   //  Change zoom
+   else if (key==GLFW_KEY_Z && !shift)
+      Z *= 2.0;
+   else if (key==GLFW_KEY_Z && shift && Z>1)
+      Z *= 0.5;
+   //  Reset view angle and location
    else if (key==GLFW_KEY_0)
-      th = ph = 0;
+      X = Y = Z = th = ph = 0;
    //  Switch shaders
    else if (key==GLFW_KEY_M)
-      mode = 1-mode;
+      mode = shift ? (mode+MODE-1)%MODE : (mode+1)%MODE;
+   //  Light movement
+   else if (key==GLFW_KEY_S)
+      move = 1-move;
    //  Switch objects
    else if (key==GLFW_KEY_O)
-      obj = 1-obj;
+      obj = shift ? (obj+2)%3 : (obj+1)%3;
    //  Switch between perspective/orthogonal
    else if (key==GLFW_KEY_P)
       fov = fov ? 0 : 57;
@@ -136,10 +158,15 @@ void reshape(GLFWwindow* window,int width,int height)
 int main(int argc,char* argv[])
 {
    //  Initialize GLFW
-   GLFWwindow* window = InitWindow("Homework 1: Kyle Curtis",1,600,600,&reshape,&key);
+   GLFWwindow* window = InitWindow("Procedural Textures",1,600,600,&reshape,&key);
 
-   //  Load shader
-   shader = CreateShaderProg("shader.vert", "shader.frag"); //CHANGED THIS
+   //  Load shaders
+   shader[1] = CreateShaderProg("stored.vert","stored.frag");
+   shader[2] = CreateShaderProg("stored.vert","wave.frag");
+   shader[3] = CreateShaderProg("model.vert","brick.frag");
+   shader[4] = CreateShaderProg("model.vert","mandel.frag");
+   shader[5] = CreateShaderProg("model.vert","manhole.frag");
+   shader[6] = CreateShaderProg(NULL,"waves.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 
@@ -147,6 +174,8 @@ int main(int argc,char* argv[])
    ErrCheck("init");
    while(!glfwWindowShouldClose(window))
    {
+      //  Light animation
+      if (move) zh = fmod(90*glfwGetTime(),360);
       //  Display
       display(window);
       //  Process any events

@@ -1,0 +1,24 @@
+hw2: Procedural Textures
+
+based on:
+ex03: Procedural Textures
+
+Kyle Curtis
+CSCI4239/5239 Spring 2026
+
+Demonstrates the use of shaders to generate textures
+
+
+Key bindings
+  m          Toggle shaders
+  o          Change objects
+  p			 Change Perspective/Orthogonal
+  s			 Stop light's movement
+  xXyYzZ     Change location or zoom
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit
+
+  time spent: 1 hour 30 min
+  start  end 

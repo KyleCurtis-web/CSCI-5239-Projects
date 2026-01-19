@@ -1,26 +1,28 @@
 /*
- *  Homework 1: NDC to RGB shader.
- * based off of ex01
+ *  NDC2RGB shader
+ *  Map NDC [-1,+1] to RGB [0,1]
  *
  *  Key bindings:
- *  m          Toggle shader
+ *  m          Toggle shaders
  *  o          Change objects
- *  p          Chenge perspective/orthogonal
+ *  xXyYzZ     Change location
  *  arrows     Change view angle
  *  PgDn/PgUp  Zoom in and out
  *  0          Reset view angle
  *  ESC        Exit
  */
 #include "CSCIx239.h"
-int mode=1;    //  Shader
+int mode=0;    //  Shader
 int th=0,ph=0; //  View angles
 int fov=57;    //  Field of view (for perspective)
 int tex=0;     //  Texture
 int obj=0;     //  Object
-int shader=0;  //  Shader
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-const char* text[] = {"Fixed Pipeline","NDC to RGB Shader"};
+float X=0,Y=0,Z=0;         //  Location of Object
+#define MODE 4
+int shader[] = {0,0,0,0};  //  Shaders
+const char* text[] = {"Fixed Pipeline","Vertex+Fragment","Vertex","Fragment"};
 
 //
 //  Refresh display
@@ -34,38 +36,47 @@ void display(GLFWwindow* window)
    //  Set view
    View(th,ph,fov,dim);
 
-   //  Enable shader
-   if (mode)
+   //  Select shader
+   glUseProgram(shader[mode]);
+   //  Set dimensions for shader 3
+   if (mode==3)
    {
-     glUseProgram(shader); //CHANGED THIS
+      int id = glGetUniformLocation(shader[mode],"dim");
+      int width,height;
+      glfwGetFramebufferSize(window,&width,&height);
+      glUniform3f(id,width,height,1);
    }
-   else
-     glUseProgram(0);
-   //  Draw scene CHANGES HERE
+   //  Transform
+   glPushMatrix();
+   glTranslated(X,Y,Z);
+   //  Draw scene
    if (obj)
-   {
-       TexturedIcosahedron(tex);
-       Icosahedron(1, 1, 1, 1, 0, 0, tex);
-   }
+      TexturedIcosahedron(tex);
    else
-   {
-       TexturedCube(tex);
-       Cube(2, 2, 2, 1, 1, 1, 0, 0, tex);
-       Cube(-2, -2, -2, 1, 1, 1, 0, 0, tex);
-   }
+      TexturedCube(tex);
+   //  Transform
+   glPopMatrix();
    //  Revert to fixed pipeline
    glUseProgram(0);
 
-   //  Display axes
-   Axes(2);
    //  Display parameters
    SetColor(1,1,1);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d Dim=%.1f Projection=%s Mode=%s",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode]);
+   Print("Angle=%d,%d  Dim=%.1f Projection=%s Mode=%s",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode]);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
    glfwSwapBuffers(window);
+}
+
+//
+//  Move to position
+//
+static void moveto(float x,float y, float z)
+{
+   X = x;
+   Y = y;
+   Z = z;
 }
 
 //
@@ -76,15 +87,42 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Discard key releases (keeps PRESS and REPEAT)
    if (action==GLFW_RELEASE) return;
 
+   //  Check for shift
+   int shift = (mods & GLFW_MOD_SHIFT);
+
    //  Exit on ESC
    if (key == GLFW_KEY_ESCAPE)
-     glfwSetWindowShouldClose(window,1);
-   //  Reset view angle
+      glfwSetWindowShouldClose(window,1);
+   //  Change location
+   else if (key==GLFW_KEY_X)
+      X += shift ? +0.05 : -0.05;
+   else if (key==GLFW_KEY_Y)
+      Y += shift ? +0.05 : -0.05;
+   else if (key==GLFW_KEY_Z)
+      Z += shift ? +0.05 : -0.05;
+   //  Reset view angle and location
    else if (key==GLFW_KEY_0)
-      th = ph = 0;
+      X = Y = Z = th = ph = 0;
+   //  Move to the corners
+   else if (key==GLFW_KEY_1)
+      moveto(-dim,-dim,-dim);
+   else if (key==GLFW_KEY_2)
+      moveto(+dim,-dim,-dim);
+   else if (key==GLFW_KEY_3)
+      moveto(-dim,+dim,-dim);
+   else if (key==GLFW_KEY_4)
+      moveto(+dim,+dim,-dim);
+   else if (key==GLFW_KEY_5)
+      moveto(-dim,-dim,+dim);
+   else if (key==GLFW_KEY_6)
+      moveto(+dim,-dim,+dim);
+   else if (key==GLFW_KEY_7)
+      moveto(-dim,+dim,+dim);
+   else if (key==GLFW_KEY_8)
+      moveto(+dim,+dim,+dim);
    //  Switch shaders
    else if (key==GLFW_KEY_M)
-      mode = 1-mode;
+      mode = shift ? (mode+MODE-1)%MODE : (mode+1)%MODE;
    //  Switch objects
    else if (key==GLFW_KEY_O)
       obj = 1-obj;
@@ -136,10 +174,12 @@ void reshape(GLFWwindow* window,int width,int height)
 int main(int argc,char* argv[])
 {
    //  Initialize GLFW
-   GLFWwindow* window = InitWindow("Homework 1: Kyle Curtis",1,600,600,&reshape,&key);
+   GLFWwindow* window = InitWindow("NDC2RGB",1,600,600,&reshape,&key);
 
-   //  Load shader
-   shader = CreateShaderProg("shader.vert", "shader.frag"); //CHANGED THIS
+   //  Load shaders
+   shader[1] = CreateShaderProg("ndc2rgb.vert","ndc2rgb.frag");
+   shader[2] = CreateShaderProg("ndc2rgb.vert",NULL);
+   shader[3] = CreateShaderProg(NULL,"ndc2rgb2.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 

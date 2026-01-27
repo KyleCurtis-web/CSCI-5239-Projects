@@ -1,13 +1,10 @@
 /*
- *  Procedural Textures
- *  Demonstrates the use of shaders to generate textures
- * based on ex03
+ *  Lighting and Textures
+ *  Demonstrates different lighting models.
  *
  *  Key bindings:
  *  m          Toggle shaders
  *  o          Change objects
- *  p          change Perspective/Orthogonal
- *  xXyYzZ     Change location or zoom
  *  arrows     Change view angle
  *  PgDn/PgUp  Zoom in and out
  *  0          Reset view angle
@@ -16,24 +13,18 @@
 #include "CSCIx239.h"
 int mode=0;    //  Shader
 int move=1;    //  Moving light
+int cull=0;    //  Face cull
 int zh=0;      //  Light position
 int th=0,ph=0; //  View angles
 int fov=57;    //  Field of view (for perspective)
 int tex=0;     //  Texture
-int piTex = 0; // pi texture
-int rimTex = 1;//  wheel rims texture
-int tireTex = 2;//  tire texture
 int obj=0;     //  Object
+float YL=1.5;  //  Light elevation
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-float X=0,Y=0,Z=1;             //  Location of Object
 #define MODE 7
-int shader[] = {0,0,0,0,0,0};  //  Shaders
-const char* text[] = {"None","Stored","Spin","Hologram","HologramXY", "Warble"};
-
-//resolutions for hologram
-float hologram[] = { 0, 1, 5, 10, 100, 500, 1000, 5000, 10000 };
-int hologramIndex = 0;
+int shader[] = {0,0,0,0,0,0,0};  //  Shaders
+const char* text[] = {"None","Stored","Vertex Blinn","Vertex Phong","Pixel Blinn","Pixel Phong","Ping Phong Mandelbrot"};
 
 //
 //  Refresh display
@@ -44,56 +35,28 @@ void display(GLFWwindow* window)
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    //  Enable Z-buffering in OpenGL
    glEnable(GL_DEPTH_TEST);
+   if (cull) glEnable(GL_CULL_FACE);
    //  Set view
    View(th,ph,fov,dim);
    //  Enable lighting
-   Lighting(3*Cos(zh),1.5,3*Sin(zh) , 0.3,0.5,0.8);
+   Lighting(3*Cos(zh),YL,3*Sin(zh) , 0.3,0.5,0.8);
 
    //  Select shader
    glUseProgram(shader[mode]);
-   //  Set dimensions for shader 3
-   if (mode>0)
-   {
-      //  Time
-      float t = glfwGetTime();
-      int id = glGetUniformLocation(shader[mode],"time");
-      glUniform1f(id,t);
-      //  Location
-      id = glGetUniformLocation(shader[mode],"loc");
-      glUniform3f(id,X,Y,1/Z);
-      //hologram setting
-      id = glGetUniformLocation(shader[mode], "hologramSpec");
-      glUniform1f(id, hologram[hologramIndex]);
-      //  Texture
-      //glEnable(GL_TEXTURE_2D);
-      //id = glGetUniformLocation(shader[mode], "tex");
-      //glUniform1i(id, 0);
-      //id = glGetUniformLocation(shader[mode], "rimTex");
-      //glUniform1i(id, 1);
-   }
    //  Draw scene
-   switch (obj)
-   {
-      case 0: TexturedCube(tex);        break;
-      case 1: TexturedIcosahedron(tex); break;
-      default: TexturedTeapot(8,tex);   break;
-   }
+   if (obj)
+      TexturedIcosahedron(tex);
+   else
+      TexturedCube(tex);
    //  Revert to fixed pipeline
    glUseProgram(0);
    glDisable(GL_LIGHTING);
-
-   //disable textures
-   //glDisable(GL_TEXTURE_2D);
+   if (cull) glDisable(GL_CULL_FACE);
 
    //  Display parameters
    SetColor(1,1,1);
-   if(mode == 3 || mode == 4)
-   {
-       glWindowPos2i(5, 20);
-       Print("Hologram Spec: %f", hologram[hologramIndex]);
-   }
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f Projection=%s Mode=%s Zoom=%f",th,ph,dim,fov>0?"Perpective":"Orthogonal",text[mode],Z);
+   Print("Angle=%d,%d FPS=%d Dim=%.1f Projection=%s Mode=%s Face Cull=%s",th,ph,FramesPerSecond(),dim,fov>0?"Perpective":"Orthogonal",text[mode],cull?"On":"Off");
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -114,48 +77,26 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Exit on ESC
    if (key == GLFW_KEY_ESCAPE)
       glfwSetWindowShouldClose(window,1);
-   //  Change location
-   else if (key==GLFW_KEY_X)
-      X += shift ? +0.05/Z : -0.05/Z;
-   else if (key==GLFW_KEY_Y)
-      Y += shift ? +0.05/Z : -0.05/Z;
-   //  Change zoom
-   else if (key==GLFW_KEY_Z && !shift)
-      Z *= 2.0;
-   else if (key==GLFW_KEY_Z && shift && Z>1)
-      Z *= 0.5;
    //  Reset view angle and location
    else if (key==GLFW_KEY_0)
-      X = Y = Z = th = ph = 0;
+      th = ph = 0;
    //  Switch shaders
    else if (key==GLFW_KEY_M)
-   {
-       //iterate or loop the mode
-       mode += 1;
-       if (mode >= sizeof(shader) / sizeof(shader[0]))
-           mode = 0;
-       glfwSetTime(0.0);//reset time
-       //let spin use the tire texture, and everything else uses pi
-       if (mode == 2)
-           tex = rimTex;
-       else
-           tex = piTex;
-       hologramIndex = 0;//reset the hologram index
-   }
+      mode = shift ? (mode+MODE-1)%MODE : (mode+1)%MODE;
    //  Light movement
    else if (key==GLFW_KEY_S)
       move = 1-move;
-   //switch hologram resolution
-   else if (key == GLFW_KEY_H)
-   {
-       //iterate through or loop the hologram values array
-       hologramIndex += 1;
-       if (hologramIndex >= (sizeof(hologram) / sizeof(hologram[0])))
-           hologramIndex = 0;
-   }
+   //  Light elevation
+   else if (key==GLFW_KEY_KP_SUBTRACT || key==GLFW_KEY_MINUS)
+      YL -= 0.05;
+   else if (key==GLFW_KEY_KP_ADD || key==GLFW_KEY_EQUAL)
+      YL += 0.05;
+   //  Toggle face cull
+   else if (key==GLFW_KEY_C)
+      cull = 1-cull;
    //  Switch objects
    else if (key==GLFW_KEY_O)
-      obj = shift ? (obj+2)%3 : (obj+1)%3;
+      obj = 1-obj;
    //  Switch between perspective/orthogonal
    else if (key==GLFW_KEY_P)
       fov = fov ? 0 : 57;
@@ -175,7 +116,6 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  PageDown key - decrease dim
    else if (key==GLFW_KEY_PAGE_UP && dim>1)
       dim -= 0.1;
-
    //  Wrap angles
    th %= 360;
    ph %= 360;
@@ -204,19 +144,17 @@ void reshape(GLFWwindow* window,int width,int height)
 int main(int argc,char* argv[])
 {
    //  Initialize GLFW
-   GLFWwindow* window = InitWindow("Homework 1: Kyle Curtis",1,600,600,&reshape,&key);
+   GLFWwindow* window = InitWindow("Lighting and Textures",0,600,600,&reshape,&key);
 
    //  Load shaders
-   shader[1] = CreateShaderProg("stored.vert","stored.frag");
-   shader[2] = CreateShaderProg("spin.vert", "stored.frag");
-   shader[3] = CreateShaderProg("stored.vert","hologram.frag");
-   shader[4] = CreateShaderProg("stored.vert","hologramXY.frag");
-   shader[5] = CreateShaderProg("stored.vert", "warble.frag");
+   shader[1] = CreateShaderProg(NULL        ,"stored.frag");
+   shader[2] = CreateShaderProg("blinn.vert","stored.frag");
+   shader[3] = CreateShaderProg("phong.vert","stored.frag");
+   shader[4] = CreateShaderProg("pixel.vert","blinn.frag");
+   shader[5] = CreateShaderProg("pixel.vert","phong.frag");
+   shader[6] = CreateShaderProg("pixel.vert","mantex.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
-   piTex = tex;
-   rimTex = LoadTexBMP("rims.bmp");
-   tireTex = LoadTexBMP("tire.bmp");
 
    //  Event loop
    ErrCheck("init");

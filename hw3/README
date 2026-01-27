@@ -1,0 +1,16 @@
+hw 3
+
+based off of example 4
+
+CSCI4239/5239 Spring 2026
+
+Demonstrates different lighting models.
+
+
+Key bindings
+  m          Toggle shaders
+  o          Change objects
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

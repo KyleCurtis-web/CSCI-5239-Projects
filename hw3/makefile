@@ -1,5 +1,5 @@
 # Homework 3
-EXE=hw2
+EXE=hw3
 
 # Main target
 all: $(EXE)
@@ -25,7 +25,7 @@ endif
 
 # Dependencies
 CSCIx239.h: mat4.h
-hw2.o: hw2.c CSCIx239.h
+hw3.o: hw3.c CSCIx239.h
 fatal.o: fatal.c CSCIx239.h
 errcheck.o: errcheck.c CSCIx239.h
 print.o: print.c CSCIx239.h
@@ -59,7 +59,7 @@ CSCIx239.a:fatal.o errcheck.o print.o axes.o loadtexbmp.o loadobj.o projection.o
 	g++ -c $(CFLG)  $<
 
 #  Link
-hw2:hw2.o   CSCIx239.a
+hw3:hw3.o   CSCIx239.a
 	gcc $(CFLG) -o $@ $^  $(LIBS)
 
 #  Clean

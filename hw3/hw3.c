@@ -1,6 +1,4 @@
 /*
- *  Lighting and Textures
- *  Demonstrates different lighting models.
  *
  *  Key bindings:
  *  m          Toggle shaders
@@ -22,9 +20,9 @@ int obj=0;     //  Object
 float YL=1.5;  //  Light elevation
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-#define MODE 7
-int shader[] = {0,0,0,0,0,0,0};  //  Shaders
-const char* text[] = {"None","Stored","Vertex Blinn","Vertex Phong","Pixel Blinn","Pixel Phong","Ping Phong Mandelbrot"};
+#define MODE 5
+int shader[] = {0,0,0,0, 0};  //  Shaders
+const char* text[] = {"None","Stored","Float Color", "Iteger Color", "If Color"};
 
 //
 //  Refresh display
@@ -144,15 +142,13 @@ void reshape(GLFWwindow* window,int width,int height)
 int main(int argc,char* argv[])
 {
    //  Initialize GLFW
-   GLFWwindow* window = InitWindow("Lighting and Textures",0,600,600,&reshape,&key);
+   GLFWwindow* window = InitWindow("HW3 Kyle Curtis",0,600,600,&reshape,&key);
 
    //  Load shaders
-   shader[1] = CreateShaderProg(NULL        ,"stored.frag");
-   shader[2] = CreateShaderProg("blinn.vert","stored.frag");
-   shader[3] = CreateShaderProg("phong.vert","stored.frag");
-   shader[4] = CreateShaderProg("pixel.vert","blinn.frag");
-   shader[5] = CreateShaderProg("pixel.vert","phong.frag");
-   shader[6] = CreateShaderProg("pixel.vert","mantex.frag");
+   shader[1] = CreateShaderProg("stored.vert", "stored.frag");
+   shader[2] = CreateShaderProg("floatcolor.vert",NULL);
+   shader[3] = CreateShaderProg("intcolor.vert", NULL);
+   shader[4] = CreateShaderProg("ifcolor.vert", NULL);
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 

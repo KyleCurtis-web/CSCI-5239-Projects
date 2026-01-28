@@ -4,13 +4,23 @@ based off of example 4
 
 CSCI4239/5239 Spring 2026
 
-Demonstrates different lighting models.
-
 
 Key bindings
   m          Toggle shaders
   o          Change objects
+  s			 toggle light movement
   arrows     Change view angle
   PgDn/PgUp  Zoom in and out
   0          Reset view angle
   ESC        Exit
+
+  time spent: 2 hours
+
+
+  Results:
+Integer vs Float for color:
+For both representations the FPS is generally within the range 4800-5000 FPS. There is not much difference with this one, it's the kind of thing the compiler is good at fixing.
+
+If statement in color:
+Now the FPS is hanging around 4900 FPS. Even just 1 if statement has noticably impacted the framerate, if statements are really inefficient to do on the graphics card.
+

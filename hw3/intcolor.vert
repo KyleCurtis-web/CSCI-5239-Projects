@@ -34,7 +34,7 @@ void main()
 {
    //  Vertex color (using Phong lighting)
    int colorVal = 1;
-   gl_FrontColor = vec4(colorVal,colorVal,colorVal,colorVal);
+   gl_FrontColor = phong() * vec4(colorVal,colorVal,colorVal,colorVal);
    //  Texture coordinates
    gl_TexCoord[0] = gl_MultiTexCoord0;
    //  Return fixed transform coordinates for this vertex

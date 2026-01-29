@@ -4,9 +4,10 @@ based off of example 4
 
 CSCI4239/5239 Spring 2026
 
+changing mode (pressing m) changes which test is being performed. The specific test will be noted on the bottom of the screen.
 
 Key bindings
-  m          Toggle shaders
+  m          Toggle mode
   o          Change objects
   s			 toggle light movement
   arrows     Change view angle
@@ -14,14 +15,33 @@ Key bindings
   0          Reset view angle
   ESC        Exit
 
-  time spent: 2 hours
-
-  start 7:30 end: 
+  time spent: 7 hours
 
   Results:
 Integer vs Float for color:
 For both representations the FPS is generally within the range 4800-5000 FPS. There is not much difference with this one, it's the kind of thing the compiler is good at fixing.
 
 If statement in color:
-Now the FPS is hanging around 4900 FPS. Even just 1 if statement has noticably impacted the framerate, if statements are really inefficient to do on the graphics card.
+Now the FPS is hanging around the same 4800-5000 FPS range. It looks like one if statement is not enough to impact the scene.
+
+Crash and Burn: Each second draw another cube.
+The framerate quickly deteriorates as more polygons are added to the scene. It drops by about 100 frame every 5 seconds. 
+
+Burn and Crash: each second draw one less cube, starts with full screen from above definition
+Frame rate quickly increases as cubes are deleted. It increases at a similar rate to how Crash and Burn was decreasing.
+
+Transcendental Color: use sin(vertex position) to calculate the color of a vertex
+This doesn't seem to have a big impact on FPS. It was hanging around the 4700 range.
+
+Spin: rotate the object based on time
+This doesn't seem to have a big impact on FPS. This makes sense because we are just doing a simple calculation to determine vertex position before drawing.
+
+InLine vs Function: a shader that calculates color as a function of vertex position, to the power of 10. In line uses vertex.x * vertex.x .... and function uses pow(vertex.x, 10)
+This is another one where there is not much difference.
+
+Summary:
+I think my methods of evaluation were flawed, it takes a lot more than the limited changes I was making in most tests to effect graphics card performance. 
+The exception was Crash and Burn, and Burn and Crash, where there are a large number of polygons being created/destroyed. 
+My other tests needed to use similarly large examples to show their effects.
+
 

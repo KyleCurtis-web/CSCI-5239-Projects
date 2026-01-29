@@ -20,9 +20,9 @@ int obj=0;     //  Object
 float YL=1.5;  //  Light elevation
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-#define MODE 6
-int shader[] = {0,0,0,0,0,0};  //  Shaders
-const char* text[] = {"None","Stored","Float Color", "Iteger Color", "If Color", "Crash and Burn"};
+#define MODE 11
+int shader[] = {0,0,0,0,0,0,0,0,0,0,0};  //  Shaders
+const char* text[] = {"None","Stored","Float Color", "Integer Color", "If Color", "Crash and Burn", "Burn and Crash", "Transcendental Sin", "Spin", "In Line", "Function"};
 
 //
 //  Refresh display
@@ -47,33 +47,69 @@ void display(GLFWwindow* window)
    {
        //  Time in seconds
        int t = glfwGetTime();
-       int x, y, z, xmax, ymax, zmax;
-       y = -dim;
-       z = -dim;
-       xmax = -dim;
-       ymax = -dim;
-       zmax = -dim;
+       int x = 0, y = 0, z = 0;
 
-       //set xmax
-       int lineSpace = 2 * dim;
-       int numLines = t / lineSpace;
-       int squareSpace = lineSpace * 2 * dim;
-       int numSquares = t / squareSpace;
 
-       //fill in squares
-       for (int i = 0; i < numSquares; i++)
+
+       while (t > 0)
        {
-           for(y = 0; y < lineSpace;y++)
+           if (x - dim > dim)
            {
-               for (x = 0; x < lineSpace; x++)
+               x = 0;
+               y++;
+               if (y - dim > dim)
                {
-                   Cube(-dim + x, -dim + y, -dim + z, 1, 1, 1, 0, 0, tex);
+                   y = 0;
+                   z++;
+                   if (z - dim > dim)
+                   {
+                       break;
+                   }
                }
            }
-           z++;
+           Cube(-dim + x, -dim + y, -dim + z, 1, 1, 1, 0, 0, tex);
+           t--;
+           x++;
        }
-       int numLines = fmod(t,squareSpace) / lineSpace;
+   }
+   else if (mode == 6)
+   {
+       //  Time in seconds
+       int dimSize = dim * 2;
+       int cubeSpace = dimSize * dimSize * dimSize;
+       int t = cubeSpace - glfwGetTime();
+       int x = 0, y = 0, z = 0;
 
+
+
+       while (t > 0)
+       {
+           if (x - dim > dim)
+           {
+               x = 0;
+               y++;
+               if (y - dim > dim)
+               {
+                   y = 0;
+                   z++;
+                   if (z - dim > dim)
+                   {
+                       break;
+                   }
+               }
+           }
+           Cube(-dim + x, -dim + y, -dim + z, 1, 1, 1, 0, 0, tex);
+           t--;
+           x++;
+       }
+   }
+   else if (mode == 8)
+   {
+       float spin = glfwGetTime() * 10;
+       if (obj)
+           Icosahedron(0,0,0,1, spin,0, tex);
+       else
+           Cube(0,0,0,1,1,1, spin,0,tex);
    }
    else
    {
@@ -186,6 +222,11 @@ int main(int argc,char* argv[])
    shader[3] = CreateShaderProg("intcolor.vert", NULL);
    shader[4] = CreateShaderProg("ifcolor.vert", NULL);
    shader[5] = CreateShaderProg("stored.vert", "stored.frag");
+   shader[6] = CreateShaderProg("stored.vert", "stored.frag");
+   shader[7] = CreateShaderProg("transcendentalColor.vert", "stored.frag");
+   shader[8] = CreateShaderProg("stored.vert", "stored.frag");
+   shader[9] = CreateShaderProg("exponentialInLineColor.vert", "stored.frag");
+   shader[10] = CreateShaderProg("exponentialFunctionColor.vert", "stored.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 

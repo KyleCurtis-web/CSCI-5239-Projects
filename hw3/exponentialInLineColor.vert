@@ -1,4 +1,4 @@
-//a vertex shader that assignes a color using an if statement
+//a vertex shader that assignes a color as a float
 //  Phong lighting
 #version 120
 
@@ -32,13 +32,12 @@ vec4 phong()
 
 void main()
 {
-   //  Vertex color (using Phong lighting)
-   float colorVal;
-   if(gl_Vertex.x > 0.0)
-        colorVal = 1.0;
-   else
-        colorVal = 0.0;
-   gl_FrontColor = phong() * vec4(colorVal,colorVal,colorVal,1.0);
+   //  Vertex color calculated by
+   float xVal = gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x * gl_Vertex.x;
+   float yVal = gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y * gl_Vertex.y;
+   float zVal = gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z * gl_Vertex.z;
+   vec4 colorVal = vec4(xVal,yVal,zVal,1.0);
+   gl_FrontColor = phong() * colorVal;
    //  Texture coordinates
    gl_TexCoord[0] = gl_MultiTexCoord0;
    //  Return fixed transform coordinates for this vertex

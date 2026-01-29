@@ -20,9 +20,9 @@ int obj=0;     //  Object
 float YL=1.5;  //  Light elevation
 float asp=1;   //  Aspect ratio
 float dim=3;   //  Size of world
-#define MODE 5
-int shader[] = {0,0,0,0, 0};  //  Shaders
-const char* text[] = {"None","Stored","Float Color", "Iteger Color", "If Color"};
+#define MODE 6
+int shader[] = {0,0,0,0,0,0};  //  Shaders
+const char* text[] = {"None","Stored","Float Color", "Iteger Color", "If Color", "Crash and Burn"};
 
 //
 //  Refresh display
@@ -42,10 +42,46 @@ void display(GLFWwindow* window)
    //  Select shader
    glUseProgram(shader[mode]);
    //  Draw scene
-   if (obj)
-      TexturedIcosahedron(tex);
+   //crash and burn, make a new object every second
+   if (mode == 5)
+   {
+       //  Time in seconds
+       int t = glfwGetTime();
+       int x, y, z, xmax, ymax, zmax;
+       y = -dim;
+       z = -dim;
+       xmax = -dim;
+       ymax = -dim;
+       zmax = -dim;
+
+       //set xmax
+       int lineSpace = 2 * dim;
+       int numLines = t / lineSpace;
+       int squareSpace = lineSpace * 2 * dim;
+       int numSquares = t / squareSpace;
+
+       //fill in squares
+       for (int i = 0; i < numSquares; i++)
+       {
+           for(y = 0; y < lineSpace;y++)
+           {
+               for (x = 0; x < lineSpace; x++)
+               {
+                   Cube(-dim + x, -dim + y, -dim + z, 1, 1, 1, 0, 0, tex);
+               }
+           }
+           z++;
+       }
+       int numLines = fmod(t,squareSpace) / lineSpace;
+
+   }
    else
-      TexturedCube(tex);
+   {
+       if (obj)
+           TexturedIcosahedron(tex);
+       else
+           TexturedCube(tex);
+   }
    //  Revert to fixed pipeline
    glUseProgram(0);
    glDisable(GL_LIGHTING);
@@ -149,6 +185,7 @@ int main(int argc,char* argv[])
    shader[2] = CreateShaderProg("floatcolor.vert",NULL);
    shader[3] = CreateShaderProg("intcolor.vert", NULL);
    shader[4] = CreateShaderProg("ifcolor.vert", NULL);
+   shader[5] = CreateShaderProg("stored.vert", "stored.frag");
    //  Load textures
    tex = LoadTexBMP("pi.bmp");
 

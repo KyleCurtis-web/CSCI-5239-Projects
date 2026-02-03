@@ -13,41 +13,13 @@ layout(binding=0) uniform UniformBufferObject {
    float Ns;    // Material shininess
    } ubo;
 
-layout (points) in  xyz;
+layout (points) in;
 
-layout (points, max_vertices = 4) out location;
+layout (points, max_vertices = 4) out;
 
 
 void main()
 {
-	location = xyz;
 }
 
 
-#version 330 core
-layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
-
-// Define inputs from vertex shader
-in VS_OUT {
-    vec2 texCoord;
-    vec3 normal;
-} gs_in[];
-
-// Define outputs to fragment shader
-out vec2 v_texCoord;
-out vec3 v_normal;
-
-void main() {
-    for (int i = 0; i < 3; i++) {
-        // Pass through position
-        gl_Position = gl_in[i].gl_Position;
-        
-        // Pass through custom attributes
-        v_texCoord = gs_in[i].texCoord;
-        v_normal = gs_in[i].normal;
-        
-        EmitVertex();
-    }
-    EndPrimitive();
-}

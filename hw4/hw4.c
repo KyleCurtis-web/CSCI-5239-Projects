@@ -1045,7 +1045,7 @@ void CreateGraphicsPipeline()
    };
 
    //  Vertex shader module
-   VkShaderModule vertShaderModule = CreateShaderModule("copy.spv");
+   VkShaderModule vertShaderModule = CreateShaderModule("vert.spv");
    VkPipelineShaderStageCreateInfo vertShaderStageInfo =
    {
       .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -1065,7 +1065,7 @@ void CreateGraphicsPipeline()
    };
 
    //  geometry shader module
-   VkShaderModule fragShaderModule = CreateShaderModule("geom.spv");
+   VkShaderModule geomShaderModule = CreateShaderModule("geom.spv");
    VkPipelineShaderStageCreateInfo geomShaderStageInfo =
    {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -1075,7 +1075,7 @@ void CreateGraphicsPipeline()
    };
 
    //  Create graphics pipeline
-   VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,fragShaderStageInfo};
+   VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo,geomShaderStageInfo, fragShaderStageInfo};
    VkGraphicsPipelineCreateInfo pipelineInfo =
    {
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -1100,6 +1100,7 @@ void CreateGraphicsPipeline()
    //  Delete shader modules
    vkDestroyShaderModule(device,fragShaderModule,NULL);
    vkDestroyShaderModule(device,vertShaderModule,NULL);
+   vkDestroyShaderModule(device, geomShaderModule, NULL);
 }
 
 //

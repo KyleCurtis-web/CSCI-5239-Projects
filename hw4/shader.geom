@@ -1,16 +1,28 @@
-hw4: Vulkan
+#version 450
 
-adapted from ex07
+layout(binding=0) uniform UniformBufferObject {
+   mat4 model;  // Model matrix
+   mat4 view;   // View matrix
+   mat4 proj;   // Projection matrix
+   mat4 norm;   // Normal matrix (passed as 4x4 to facilitate alignment)
+   vec4 pos;    // Light position
+   vec4 Ca;     // Light ambient
+   vec4 Cd;     // Light diffuse
+   vec4 Cs;     // Light specular
+   vec4 Ks;     // Material specular
+   float Ns;    // Material shininess
+   } ubo;
 
-CSCI4239/5239 Spring 2026
+layout (points) in  xyz;
+
+layout (points, max_vertices = 4) out location;
 
 
-Adapted from vulkan-tutorial.com
+void main()
+{
+	location = xyz;
+}
 
-DELETE LATER
-note to self, must modify the makefile to compile .spv files for each shader
-
-example geometry shader
 
 #version 330 core
 layout (triangles) in;
@@ -39,16 +51,3 @@ void main() {
     }
     EndPrimitive();
 }
-
-
-
-Key bindings
-  p/P        Toggle between orthogonal & perspective projection
-  m/M        Stop/start light movement
-  -/+        Move light up/down
-  [/]        Move light in orbit
-  arrows     Change view angle
-  ESC        Exit
-
-  Time Spent: 5 hours
-  as of 12

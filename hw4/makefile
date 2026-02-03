@@ -2,7 +2,7 @@
 EXE=hw4
 
 # Main target
-all: $(EXE) vert.spv frag.spv copy.spv
+all: $(EXE) vert.spv frag.spv geom.spv
 
 #  Msys/MinGW
 ifeq "$(OS)" "Windows_NT"
@@ -34,12 +34,12 @@ mat4.o: mat4.c mat4.h
 	g++ -c $(CFLG)  $<
 
 #  Compile shaders
-vert.spv:vulkan.vert
-	glslangValidator -V -o vert.spv vulkan.vert
-frag.spv:vulkan.frag
-	glslangValidator -V -o frag.spv vulkan.frag
-copy.spv:copy.vert
-	glslangValidator -V -o copy.spv copy.vert
+vert.spv:shader.vert
+	glslangValidator -V -o vert.spv shader.vert
+frag.spv:shader.frag
+	glslangValidator -V -o frag.spv shader.frag
+geom.spv:shader.geom
+	glslangValidator -V -o geom.spv shader.geom
 #  Link
 hw4:hw4.o mat4.o 
 	gcc $(CFLG) -o $@ $^  $(LIBS)

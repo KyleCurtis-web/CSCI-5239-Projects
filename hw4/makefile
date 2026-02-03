@@ -2,7 +2,7 @@
 EXE=hw4
 
 # Main target
-all: $(EXE) vert.spv frag.spv
+all: $(EXE) vert.spv frag.spv copy.spv
 
 #  Msys/MinGW
 ifeq "$(OS)" "Windows_NT"
@@ -38,6 +38,8 @@ vert.spv:vulkan.vert
 	glslangValidator -V -o vert.spv vulkan.vert
 frag.spv:vulkan.frag
 	glslangValidator -V -o frag.spv vulkan.frag
+copy.spv:copy.vert
+	glslangValidator -V -o copy.spv copy.vert
 #  Link
 hw4:hw4.o mat4.o 
 	gcc $(CFLG) -o $@ $^  $(LIBS)

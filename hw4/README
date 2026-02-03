@@ -7,6 +7,9 @@ CSCI4239/5239 Spring 2026
 
 Adapted from vulkan-tutorial.com
 
+DELETE LATER
+note to self, must modify the makefile to compile .spv files for each shader
+
 
 Key bindings
   p/P        Toggle between orthogonal & perspective projection
@@ -16,4 +19,4 @@ Key bindings
   arrows     Change view angle
   ESC        Exit
 
-  Time Spent:
+  Time Spent: 4 hours

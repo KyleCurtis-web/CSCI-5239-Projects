@@ -1045,7 +1045,7 @@ void CreateGraphicsPipeline()
    };
 
    //  Vertex shader module
-   VkShaderModule vertShaderModule = CreateShaderModule("vert.spv");
+   VkShaderModule vertShaderModule = CreateShaderModule("copy.spv");
    VkPipelineShaderStageCreateInfo vertShaderStageInfo =
    {
       .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -1062,6 +1062,16 @@ void CreateGraphicsPipeline()
       .stage  = VK_SHADER_STAGE_FRAGMENT_BIT,
       .module = fragShaderModule,
       .pName  = "main",
+   };
+
+   //  geometry shader module
+   VkShaderModule fragShaderModule = CreateShaderModule("geom.spv");
+   VkPipelineShaderStageCreateInfo geomShaderStageInfo =
+   {
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+      .stage = VK_SHADER_STAGE_GEOMETRY_BIT,
+      .module = geomShaderModule,
+      .pName = "main",
    };
 
    //  Create graphics pipeline

@@ -791,7 +791,7 @@ void CreateDevice()
       };
       queueCreateInfos[k] = queueCreateInfo;
    }
-   VkPhysicalDeviceFeatures deviceFeatures = {.samplerAnisotropy=VK_TRUE};
+   VkPhysicalDeviceFeatures deviceFeatures = {.samplerAnisotropy=VK_TRUE, .geometryShader=VK_TRUE};
    VkDeviceCreateInfo deviceInfo =
    {
       .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -863,7 +863,7 @@ void CreateGraphicsPipeline()
       .descriptorCount = 1,
       .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
       .pImmutableSamplers = NULL,
-      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT|VK_SHADER_STAGE_FRAGMENT_BIT,
+      .stageFlags = VK_SHADER_STAGE_VERTEX_BIT| VK_SHADER_STAGE_GEOMETRY_BIT| VK_SHADER_STAGE_FRAGMENT_BIT,
    };
    VkDescriptorSetLayoutBinding samplerLayoutBinding =
    {
@@ -1079,7 +1079,7 @@ void CreateGraphicsPipeline()
    VkGraphicsPipelineCreateInfo pipelineInfo =
    {
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
+      .stageCount = 3,
       .pStages = shaderStages,
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &inputAssembly,

@@ -13,6 +13,10 @@ layout(binding=0) uniform UniformBufferObject {
    float Ns;    // Material shininess
    } ubo;
 
+  layout(push_constant) uniform PushConstants {
+    float time;
+} pc;
+
 // Input: points from the vertex shader
 layout (triangles) in;
 
@@ -44,7 +48,7 @@ void main() {
     t2d = t2dIn[i];
 
     // Vertex
-    gl_Position = gl_in[i].gl_Position;
+    gl_Position = gl_in[i].gl_Position + vec4((Norm * (sin(pc.time) + 1.0) / 2.0) * 2.0, 0.0);
     EmitVertex();
 
     }

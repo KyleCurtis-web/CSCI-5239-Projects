@@ -885,12 +885,22 @@ void CreateGraphicsPipeline()
    if (vkCreateDescriptorSetLayout(device,&layoutInfo,NULL,&descriptorSetLayout))
       Fatal("Failed to create descriptor set layout\n");
 
+   VkPushConstantRange pushConstantRange =
+   {
+   .stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT, // Which shader needs it
+   .offset = 0,
+   .size = sizeof(float), // Size of your 'time' variable
+   };
+
    //  Pipeline layout
    VkPipelineLayoutCreateInfo pipelineLayoutInfo =
    {
       .sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 1,
       .pSetLayouts    = &descriptorSetLayout,
+
+      .pushConstantRangeCount = 1,
+      .pPushConstantRanges = &pushConstantRange,
    };
    if (vkCreatePipelineLayout(device,&pipelineLayoutInfo,NULL,&pipelineLayout))
       Fatal("Failed to create pipeline layout\n");
@@ -1394,6 +1404,17 @@ void RecordCommandBuffer(VkCommandBuffer commandBuffer,uint32_t imageIndex)
    renderPassInfo.clearValueCount = sizeof(clearValues)/sizeof(VkClearValue);
    renderPassInfo.pClearValues    = clearValues;
    vkCmdBeginRenderPass(commandBuffer,&renderPassInfo,VK_SUBPASS_CONTENTS_INLINE);
+
+   //recording command
+   float currentTime = glfwGetTime(); // Get from your app clock
+   vkCmdPushConstants(
+       commandBuffer,
+       pipelineLayout,
+       VK_SHADER_STAGE_FRAGMENT_BIT,
+       0,
+       sizeof(float),
+       &currentTime
+   );
 
    //  Bind the graphics pipeline
    vkCmdBindPipeline(commandBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,graphicsPipeline);

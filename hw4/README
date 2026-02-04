@@ -2,44 +2,12 @@ hw4: Vulkan
 
 adapted from ex07
 
+"exploding" vertex in geometry shader based on learnopengl.com example
+
 CSCI4239/5239 Spring 2026
 
 
 Adapted from vulkan-tutorial.com
-
-DELETE LATER
-note to self, must modify the makefile to compile .spv files for each shader
-
-example geometry shader
-
-#version 330 core
-layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
-
-// Define inputs from vertex shader
-in VS_OUT {
-    vec2 texCoord;
-    vec3 normal;
-} gs_in[];
-
-// Define outputs to fragment shader
-out vec2 v_texCoord;
-out vec3 v_normal;
-
-void main() {
-    for (int i = 0; i < 3; i++) {
-        // Pass through position
-        gl_Position = gl_in[i].gl_Position;
-        
-        // Pass through custom attributes
-        v_texCoord = gs_in[i].texCoord;
-        v_normal = gs_in[i].normal;
-        
-        EmitVertex();
-    }
-    EndPrimitive();
-}
-
 
 
 Key bindings
@@ -50,5 +18,4 @@ Key bindings
   arrows     Change view angle
   ESC        Exit
 
-  Time Spent: 5 hours
-  start 10
+  Time Spent: 10 hours

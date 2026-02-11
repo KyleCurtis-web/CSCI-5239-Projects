@@ -1,0 +1,8 @@
+
+
+have to navigate to project folder, then run  
+python -m http.server 8000
+then on browser use http://localhost:8000
+
+worked on project for: 1 hour
+Start: 9:40

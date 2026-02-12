@@ -13,35 +13,37 @@ based off of example 8
 <!--
   Vertex shader
   -->
-<script id="shader-vs" type="x-shader/x-vertex"> 
-   precision highp float;
-   attribute vec3 XYZ;
-   attribute vec3 RGB;
-   attribute vec2 T2D;
-   uniform mat4 ProjectionMatrix;
-   uniform mat4 ModelviewMatrix;
-   varying vec3 col;
-   varying vec2 t2d;
-   void main(void)
-   {
-      col = RGB;
-      t2d = T2D;
-      gl_Position = ProjectionMatrix * ModelviewMatrix * vec4(XYZ,1);
-   }
+<script id="shader-vs" type="x-shader/x-vertex">
+
+        precision highp float;
+        attribute vec3 XYZ;
+        attribute vec3 NORM;
+        attribute vec2 T2D;
+        uniform mat4 ProjectionMatrix;
+        uniform mat4 ModelviewMatrix;
+        varying vec3 norm;
+        varying vec2 t2d;
+
+        void main(void)
+        {
+           norm = NORM;
+           t2d = T2D;
+           gl_Position = ProjectionMatrix * ModelviewMatrix * vec4(XYZ,1);
+        }
 </script> 
  
 <!--
   Fragment shader
   -->
-<script id="shader-fs" type="x-shader/x-fragment"> 
-precision highp float;
-varying vec3 col;
-varying vec2 t2d;
-uniform sampler2D tex;
-void main(void)
-{
-   gl_FragColor = vec4(col,1)*texture2D(tex,t2d);
-}
+<script id="shader-fs" type="x-shader/x-fragment">
+        precision highp float;
+        varying vec3 norm;
+        varying vec2 t2d;
+        uniform sampler2D tex;
+        void main(void)
+        {
+           gl_FragColor = texture2D(tex,t2d);
+        }
 </script> 
 
 <!--
@@ -141,45 +143,52 @@ function webGLStart()
 
    //  Vertex array count
    var n = 36;
-   //  shape vertex, color and texture
+    //  shape vertex, normal and texture
+    //groups of 6: front, back, right, left, top, bottom
+   //
    var shape_data = 
    [
-      -1,-1, 1,  1,0,0,   0,1,
-      +1,-1, 1,  1,0,0,   1,1,
-      -1,+1, 1,  1,0,0,   0,0,
-      -1,+1, 1,  1,0,0,   0,0,
-      +1,-1, 1,  1,0,0,   1,1,
-      +1,+1, 1,  1,0,0,   1,0,
-      +1,-1,-1,  0,0,1,   0,1,
-      -1,-1,-1,  0,0,1,   1,1,
-      +1,+1,-1,  0,0,1,   0,0,
-      +1,+1,-1,  0,0,1,   0,0,
-      -1,-1,-1,  0,0,1,   1,1,
-      -1,+1,-1,  0,0,1,   1,0,
-      +1,-1,+1,  1,1,0,   0,1,
-      +1,-1,-1,  1,1,0,   1,1,
-      +1,+1,+1,  1,1,0,   0,0,
-      +1,+1,+1,  1,1,0,   0,0,
-      +1,-1,-1,  1,1,0,   1,1,
-      +1,+1,-1,  1,1,0,   1,0,
-      -1,-1,-1,  0,1,0,   0,1,
-      -1,-1,+1,  0,1,0,   1,1,
+      -1,-1, 1,  0,0,1,   0,1,
+      +1,-1, 1,  0,0,1,   1,1,
+      -1,+1, 1,  0,0,1,   0,0,
+      -1,+1, 1,  0,0,1,   0,0,
+      +1,-1, 1,  0,0,1,   1,1,
+      +1,+1, 1,  0,0,1,   1,0,
+
+      +1,-1,-1,  0,0,-1,   0,1,
+      -1,-1,-1,  0,0,-1,   1,1,
+      +1,+1,-1,  0,0,-1,   0,0,
+      +1,+1,-1,  0,0,-1,   0,0,
+      -1,-1,-1,  0,0,-1,   1,1,
+      -1,+1,-1,  0,0,-1,   1,0,
+
+      +1,-1,+1,  1,0,0,   0,1,
+      +1,-1,-1,  1,0,0,   1,1,
+      +1,+1,+1,  1,0,0,   0,0,
+      +1,+1,+1,  1,0,0,   0,0,
+      +1,-1,-1,  1,0,0,   1,1,
+      +1,+1,-1,  1,0,0,   1,0,
+
+      -1,-1,-1,  -1,0,0,   0,1,
+      -1,-1,+1,  -1,0,0,   1,1,
+      -1,+1,-1,  -1,0,0,   0,0,
+      -1,+1,-1,  -1,0,0,   0,0,
+      -1,-1,+1,  -1,0,0,   1,1,
+      -1,+1,+1,  -1,0,0,   1,0,
+
+      -1,+1,+1,  0,1,0,   0,1,
+      +1,+1,+1,  0,1,0,   1,1,
       -1,+1,-1,  0,1,0,   0,0,
       -1,+1,-1,  0,1,0,   0,0,
-      -1,-1,+1,  0,1,0,   1,1,
-      -1,+1,+1,  0,1,0,   1,0,
-      -1,+1,+1,  0,1,1,   0,1,
-      +1,+1,+1,  0,1,1,   1,1,
-      -1,+1,-1,  0,1,1,   0,0,
-      -1,+1,-1,  0,1,1,   0,0,
-      +1,+1,+1,  0,1,1,   1,1,
-      +1,+1,-1,  0,1,1,   1,0,
-      -1,-1,-1,  1,0,1,   0,1,
-      +1,-1,-1,  1,0,1,   1,1,
-      -1,-1,+1,  1,0,1,   0,0,
-      -1,-1,+1,  1,0,1,   0,0,
-      +1,-1,-1,  1,0,1,   1,1,
-      +1,-1,+1,  1,0,1,   1,0,
+      +1,+1,+1,  0,1,0,   1,1,
+      +1,+1,-1,  0,1,0,   1,0,
+
+      -1,-1,-1,  0,-1,0,   0,1,
+      +1,-1,-1,  0,-1,0,   1,1,
+      -1,-1,+1,  0,-1,0,   0,0,
+      -1,-1,+1,  0,-1,0,   0,0,
+      +1,-1,-1,  0,-1,0,   1,1,
+      +1,-1,+1,  0,-1,0,   1,0,
    ];
    var shape = gl.createBuffer();
    gl.bindBuffer(gl.ARRAY_BUFFER,shape);
@@ -201,7 +210,7 @@ function webGLStart()
    img.onload = function()
    {
       gl.bindTexture(gl.TEXTURE_2D,tex);
-      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
       //  When loaded call Display() to refresh the screen
@@ -238,9 +247,9 @@ function webGLStart()
       gl.enableVertexAttribArray(XYZ);
       gl.vertexAttribPointer(XYZ,3,gl.FLOAT,false,32,0);
       //  Set up 3D color array
-      var RGB = gl.getAttribLocation(prog,"RGB");
-      gl.enableVertexAttribArray(RGB);
-      gl.vertexAttribPointer(RGB,3,gl.FLOAT,false,32,12);
+      var NORM = gl.getAttribLocation(prog,"NORM");
+      gl.enableVertexAttribArray(NORM);
+      gl.vertexAttribPointer(NORM,3,gl.FLOAT,false,32,12);
       //  Set up 2D texture array
       var T2D = gl.getAttribLocation(prog,"T2D");
       gl.enableVertexAttribArray(T2D);
@@ -251,7 +260,7 @@ function webGLStart()
 
       //  Disable vertex arrays
       gl.disableVertexAttribArray(XYZ);
-      gl.disableVertexAttribArray(RGB);
+      gl.disableVertexAttribArray(NORM);
       gl.disableVertexAttribArray(T2D);
 
       //  Flush

@@ -1,8 +1,10 @@
 
 
-have to navigate to project folder, then run  
+have to navigate to project folder, then run
 python -m http.server 8000
 then on browser use http://localhost:8000
+
+alternatively there is a VS code extension
 
 can change shape data with examples here
 
@@ -60,7 +62,7 @@ worked on project for: 11 hour
   F data, the letter F, modified from https://webglfundamentals.org/webgl/lessons/webgl-3d-lighting-point.html
     // left column front
     0, 0, 0,        0, 0, 1,    0,0,
-    0, -1.5, 0,      0, 0, 1,    0,1,  
+    0, -1.5, 0,      0, 0, 1,    0,1,
     .3, 0, 0,       0, 0, 1,    1,0,
     0, -1.5, 0,      0, 0, 1,    0,1,
     .3, -1.5, 0,     0, 0, 1,    1,1,
@@ -147,7 +149,7 @@ worked on project for: 11 hour
     .67, -.6, -.3,     0, 1, 0,    1,1,
 
         // right of middle rung
-    .67, -.6, -0,      1, 0, 0,    0,0,  
+    .67, -.6, -0,      1, 0, 0,    0,0,
     .67, -.9, -.3,     1, 0, 0,    1,1,
     .67, -.6, -.3,     1, 0, 0,    0,1,
     .67, -.6, -0,      1, 0, 0,    0,0,
@@ -191,7 +193,7 @@ worked on project for: 11 hour
     0.2,0,2.7,                  1,1,1,  0,1,
     0.2,-0.112,2.7,             1,1,1,  1,1,
     0.112,-0.2,2.7,             1,1,1,  0,0,
-    0,-0.2,2.7,                 1,1,1,  1,0, 
+    0,-0.2,2.7,                 1,1,1,  1,0,
     1.3375,0,2.53125,           1,1,1,  0,1,
     1.3375,-0.749,2.53125,      1,1,1,  1,1,
     0.749, -1.3375, 2.53125,    1,1,1,  0,0,

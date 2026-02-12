@@ -141,8 +141,8 @@ function webGLStart()
 
    //  Vertex array count
    var n = 36;
-   //  Cube vertex, color and texture
-   var cube_data = 
+   //  shape vertex, color and texture
+   var shape_data = 
    [
       -1,-1, 1,  1,0,0,   0,1,
       +1,-1, 1,  1,0,0,   1,1,
@@ -181,9 +181,9 @@ function webGLStart()
       +1,-1,-1,  1,0,1,   1,1,
       +1,-1,+1,  1,0,1,   1,0,
    ];
-   var cube = gl.createBuffer();
-   gl.bindBuffer(gl.ARRAY_BUFFER,cube);
-   gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(cube_data),gl.STATIC_DRAW);
+   var shape = gl.createBuffer();
+   gl.bindBuffer(gl.ARRAY_BUFFER,shape);
+   gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(shape_data),gl.STATIC_DRAW);
 
    //  Set state to draw scene
    gl.enable(gl.DEPTH_TEST);
@@ -196,7 +196,8 @@ function webGLStart()
    //  Create and load pi texture
    var tex = gl.createTexture();
    var img = new Image();
-   img.src = 'pi.png';
+   //img.src = 'pi.png';
+   img.src = 'square velociraptor.png';
    img.onload = function()
    {
       gl.bindTexture(gl.TEXTURE_2D,tex);
@@ -230,8 +231,8 @@ function webGLStart()
       gl.uniformMatrix4fv(gl.getUniformLocation(prog,"ProjectionMatrix") , false , ProjectionMatrix.getMat());
       gl.uniformMatrix4fv(gl.getUniformLocation(prog,"ModelviewMatrix")  , false , ModelviewMatrix.getMat());
 
-      //  Bind cube buffer
-      gl.bindBuffer(gl.ARRAY_BUFFER,cube);
+      //  Bind shape buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER,shape);
       //  Set up 3D vertex array
       var XYZ = gl.getAttribLocation(prog,"XYZ");
       gl.enableVertexAttribArray(XYZ);

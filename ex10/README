@@ -1,0 +1,23 @@
+ex10: Real Time Image processing
+
+Willem A. (Vlakkies) Schreuder
+CSCI4239/5239 Spring 2026
+
+Demonstrates post-processing of video images
+
+Relies on OpenCV VideoIO module to snarf video
+
+On Ubuntu install OpenCV VideoIO with
+apt-get install libopencv-videoio-dev
+
+On MSYS2 install OpenCV with
+pacman -S mingw-w64-x86_64-opencv
+
+
+Key bindings
+  m          Toggle shader
+  o          Change objects
+  arrows     Change location
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

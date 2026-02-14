@@ -1,0 +1,20 @@
+hw6: Inter-Image processing
+
+based on ex11
+
+Willem A. (Vlakkies) Schreuder
+CSCI4239/5239 Spring 2026
+
+Mostly ripped off from Pete Battaglia (Fall 2009)
+
+compare a new set of images in new ways
+
+
+Key bindings
+  m/M        Cycle through shaders (filters)
+  +/-        Change fraction in mix mode
+  a          Toggle crosshairs
+  arrows     Pan location
+  PgDn/PgUp  Zoom in and out
+  0          Reset view
+  ESC        Exit

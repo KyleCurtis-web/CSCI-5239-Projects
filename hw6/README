@@ -2,6 +2,8 @@ hw6: Inter-Image processing
 
 based on ex11
 
+wheres wally. An examination of wally's space on the page
+
 Willem A. (Vlakkies) Schreuder
 CSCI4239/5239 Spring 2026
 
@@ -11,7 +13,8 @@ compare a new set of images in new ways
 
 
 Key bindings
-  m/M        Cycle through shaders (filters)
+  m/M        Cycle through shaders forwards (filters)
+  n/N        Cycle through shaders backwards (filters)
   +/-        Change fraction in mix mode
   a          Toggle crosshairs
   arrows     Pan location

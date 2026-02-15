@@ -19,8 +19,13 @@ float asp=1;   //  Aspect ratio
 float zoom=1;  //  Zoom factor
 float frac=0;  //  Fraction
 float X=0,Y=0; //  Initial position
-int shader;    //  Shader program
+int shaders[2];    //  Shader program
+int shaderNum = 0;  // which shader is being used
+int image1 = 0;
+int image2 = 1;
+int imageSet = 0;
 #define MODE 5
+#define IMAGESETS 1
 const char* text[] = {"Image 0","Image 1","Mix","Difference","False Color"};
 
 //
@@ -39,20 +44,23 @@ void display(GLFWwindow* window)
    glScaled(zoom,zoom,1);
    glTranslated(X,Y,0);
    SetColor(1,1,1);
-   glUseProgram(shader);
+   glUseProgram(shaders[shaderNum]);
 
-   //  Set mode for shader
-   int id = glGetUniformLocation(shader,"mode");
-   glUniform1i(id,mode);
-   //  Fraction used in some filters
-   id = glGetUniformLocation(shader,"frac");
-   if (id>=0) glUniform1f(id,frac);
-   //  First image is on texture unit 0
-   id = glGetUniformLocation(shader,"img0");
-   glUniform1i(id,0);
-   //  Second image is on texture unit 1
-   id = glGetUniformLocation(shader,"img1");
-   glUniform1i(id,1);
+   if (shaderNum == 0)
+   {
+       //  Set mode for shader
+       int id = glGetUniformLocation(shaders[shaderNum], "mode");
+       glUniform1i(id, mode);
+       //  Fraction used in some filters
+       id = glGetUniformLocation(shaders[shaderNum], "frac");
+       if (id >= 0) glUniform1f(id, frac);
+       //  First image is on texture unit 0
+       id = glGetUniformLocation(shaders[shaderNum], "img0");
+       glUniform1i(id, image1);
+       //  Second image is on texture unit 1
+       id = glGetUniformLocation(shaders[shaderNum], "img1");
+       glUniform1i(id, image2);
+   }
 
    //  Draw to a quad
    glEnable(GL_TEXTURE_2D);
@@ -79,15 +87,24 @@ void display(GLFWwindow* window)
       glEnd();
    }
 
+   glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+   glBegin(GL_QUADS);
+   glVertex2f(-5, -5);
+   glVertex2f(-5, -.93);
+   glVertex2f(5, -.93);
+   glVertex2f(5, -5);
+   glEnd();
+
    //  Display parameters
    SetColor(1,1,1);
    glWindowPos2i(5,5);
-   Print("Zoom=%.1f Offset=%f,%f Mode=%s",zoom,X,Y,text[mode]);
+   Print("Zoom=%.1f Offset=%f,%f Mode=%s Image Set=%d",zoom,X,Y,text[mode], imageSet + 1);
    if (mode==2) Print(" Fraction=%.1f",frac);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
    glfwSwapBuffers(window);
+
 }
 
 //
@@ -112,9 +129,40 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Reset view
    else if (key == GLFW_KEY_0)
       X = Y = 0;
-   //  Cycle modes
+   //  Cycle modes forward
    else if (key == GLFW_KEY_M)
       mode = shift ? (mode+MODE-1)%MODE : (mode+1)%MODE;
+   //  Cycle modes backward
+   else if (key == GLFW_KEY_N)
+       mode = (mode == 0) ? MODE - 1 : (mode - 1) % MODE;
+   //  Cycle modes forward
+   else if (key == GLFW_KEY_K)
+   {
+       if (imageSet + 1 == IMAGESETS)
+       {
+           imageSet = 0;
+       }
+       else
+       {
+           imageSet += 1;
+       }
+       image1 = imageSet * 2;
+       image2 = image1 + 1;
+   }
+   //  Cycle modes backward
+   else if (key == GLFW_KEY_J)
+   {
+       if (imageSet - 1 < 0)
+       {
+           imageSet = IMAGESETS - 1;
+       }
+       else
+       {
+           imageSet -= 1;
+       }
+       image1 = imageSet * 2;
+       image2 = image1 + 1;
+   }
    //  Toggle axes
    else if (key == GLFW_KEY_A)
       axes = !axes;
@@ -173,13 +221,15 @@ int main(int argc,char* argv[])
 
    //  Load first image to texture unit 0
    glActiveTexture(GL_TEXTURE0);
-   LoadTexBMP("20090602.bmp");
+   //LoadTexBMP("20090602.bmp");
+   LoadTexBMP("wallysGone/wallysGone1.bmp");
    //  Load second image to texture unit 1
    glActiveTexture(GL_TEXTURE1);
-   LoadTexBMP("20090706.bmp");
+   //LoadTexBMP("20090706.bmp");
+   LoadTexBMP("wallys/wallys1.bmp");
 
    //  Load shaders
-   shader = CreateShaderProg(NULL,"imgproc.frag");
+   shaders[0] = CreateShaderProg(NULL, "imgproc.frag");
 
    //  Event loop
    ErrCheck("init");

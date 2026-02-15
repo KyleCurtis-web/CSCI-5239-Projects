@@ -49,17 +49,34 @@ void display(GLFWwindow* window)
    if (shaderNum == 0)
    {
        //  Set mode for shader
-       int id = glGetUniformLocation(shaders[shaderNum], "mode");
+       int id = glGetUniformLocation(shaders[0], "mode");
        glUniform1i(id, mode);
        //  Fraction used in some filters
-       id = glGetUniformLocation(shaders[shaderNum], "frac");
+       id = glGetUniformLocation(shaders[0], "frac");
        if (id >= 0) glUniform1f(id, frac);
        //  First image is on texture unit 0
-       id = glGetUniformLocation(shaders[shaderNum], "img0");
+       id = glGetUniformLocation(shaders[0], "img0");
        glUniform1i(id, image1);
        //  Second image is on texture unit 1
-       id = glGetUniformLocation(shaders[shaderNum], "img1");
+       id = glGetUniformLocation(shaders[0], "img1");
        glUniform1i(id, image2);
+   }
+   else if (shaderNum == 1)
+   {
+       int id = 0;
+       char imgString[20];
+       char* initialString = "img";
+       //go though and add each image
+       for (int i = 0; i < IMAGESETS * 2; i++)
+       {
+           sprintf(imgString, "%s%d", initialString, i);
+           id = glGetUniformLocation(shaders[1], imgString);
+           glUniform1i(id, i);
+       }
+   }
+   else
+   {
+       //somehow there is no shader
    }
 
    //  Draw to a quad
@@ -135,7 +152,7 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Cycle modes backward
    else if (key == GLFW_KEY_N)
        mode = (mode == 0) ? MODE - 1 : (mode - 1) % MODE;
-   //  Cycle modes forward
+   //  Cycle images forward
    else if (key == GLFW_KEY_K)
    {
        if (imageSet + 1 == IMAGESETS)
@@ -149,7 +166,7 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
        image1 = imageSet * 2;
        image2 = image1 + 1;
    }
-   //  Cycle modes backward
+   //  Cycle images backward
    else if (key == GLFW_KEY_J)
    {
        if (imageSet - 1 < 0)
@@ -163,6 +180,9 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
        image1 = imageSet * 2;
        image2 = image1 + 1;
    }
+   //  Cycle modes forward
+   else if (key == GLFW_KEY_I)
+       shaderNum = shaderNum ? 0 : 1;
    //  Toggle axes
    else if (key == GLFW_KEY_A)
       axes = !axes;
@@ -221,11 +241,9 @@ int main(int argc,char* argv[])
 
    //  Load first image to texture unit 0
    glActiveTexture(GL_TEXTURE0);
-   //LoadTexBMP("20090602.bmp");
    LoadTexBMP("wallysGone/wallysGone1.bmp");
    //  Load second image to texture unit 1
    glActiveTexture(GL_TEXTURE1);
-   //LoadTexBMP("20090706.bmp");
    LoadTexBMP("wallys/wallys1.bmp");
 
    glActiveTexture(GL_TEXTURE2);

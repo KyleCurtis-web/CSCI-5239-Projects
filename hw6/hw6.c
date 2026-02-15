@@ -25,7 +25,7 @@ int image1 = 0;
 int image2 = 1;
 int imageSet = 0;
 #define MODE 5
-#define IMAGESETS 1
+#define IMAGESETS 2
 const char* text[] = {"Image 0","Image 1","Mix","Difference","False Color"};
 
 //
@@ -227,6 +227,12 @@ int main(int argc,char* argv[])
    glActiveTexture(GL_TEXTURE1);
    //LoadTexBMP("20090706.bmp");
    LoadTexBMP("wallys/wallys1.bmp");
+
+   glActiveTexture(GL_TEXTURE2);
+   LoadTexBMP("wallysGone/wallysGone2.bmp");
+
+   glActiveTexture(GL_TEXTURE3);
+   LoadTexBMP("wallys/wallys2.bmp");
 
    //  Load shaders
    shaders[0] = CreateShaderProg(NULL, "imgproc.frag");

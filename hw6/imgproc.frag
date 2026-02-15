@@ -21,7 +21,13 @@ void main()
       gl_FragColor = mix(pix0,pix1,frac);
    //  Absolute difference
    else if (mode==3)
-      gl_FragColor = abs(pix1-pix0);
+   {
+      if(all(equal(pix1,pix0)))
+        gl_FragColor = vec4(0,0,0,0);
+      else
+        gl_FragColor = pix1;
+      //gl_FragColor = abs(pix1-pix0);
+   }
    //  False color
    else if (mode==4)
       gl_FragColor = vec4(length(pix0.rgb),0,length(pix1.rgb),1);

@@ -63,30 +63,17 @@ void display(GLFWwindow* window)
    }
    else if (shaderNum == 1)
    {
-       //int id = 0;
-       //char imgString[20];
-       //char* initialString = "img";
-       ////go though and add each image
-       //for (int i = 0; i < IMAGESETS * 2; i++)
-       //{
-       //    sprintf(imgString, "%s%d", initialString, i);
-       //    id = glGetUniformLocation(shaders[1], imgString);
-       //    glUniform1i(id, i);
-       //}
+       int id = 0;
+       char imgString[20];
+       char* initialString = "img";
+       //go though and add each image
+       for (int i = 0; i < IMAGESETS * 2; i++)
+       {
+           sprintf(imgString, "%s%d", initialString, i);
+           id = glGetUniformLocation(shaders[1], imgString);
+           glUniform1i(id, i);
+       }
               
-       int id;
-       //  First image is on texture unit 0
-       id = glGetUniformLocation(shaders[1], "img0");
-       glUniform1i(id, 0);
-       //  Second image is on texture unit 1
-       id = glGetUniformLocation(shaders[1], "img1");
-       glUniform1i(id, 1);
-       //  First image is on texture unit 0
-       id = glGetUniformLocation(shaders[1], "img2");
-       glUniform1i(id, 2);
-       //  Second image is on texture unit 1
-       id = glGetUniformLocation(shaders[1], "img3");
-       glUniform1i(id, 3);
    }
    else
    {

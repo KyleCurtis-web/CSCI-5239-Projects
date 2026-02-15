@@ -17,7 +17,7 @@ void main()
    vec4 difference = abs(pix1-pix0);
    vec4 sumOfDifference = difference;
    difference = abs(pix3-pix2);
-   sumOfDifference = abs(sumOfDIfference + difference);
+   sumOfDifference = abs(sumOfDifference + difference);
 
 
    gl_FragColor = sumOfDifference;

@@ -314,10 +314,10 @@ int main(int argc,char* argv[])
 
    //fourth set
    glActiveTexture(GL_TEXTURE6);
-   LoadTexBMP("wallysGone/wallysGone1.bmp");
+   LoadTexBMP("wallysGone/wallysGone4.bmp");
 
    glActiveTexture(GL_TEXTURE7);
-   LoadTexBMP("wallys/wallys1.bmp");
+   LoadTexBMP("wallys/wallys4.bmp");
 
    //  Load shaders
    shaders[0] = CreateShaderProg(NULL, "imgproc.frag");

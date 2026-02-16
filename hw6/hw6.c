@@ -19,13 +19,15 @@ float asp=1;   //  Aspect ratio
 float zoom=1;  //  Zoom factor
 float frac=0;  //  Fraction
 float X=0,Y=0; //  Initial position
-int shaders[2];    //  Shader program
+int shaders[3];    //  Shader program
 int shaderNum = 0;  // which shader is being used
 int image1 = 0;
 int image2 = 1;
+int migrateImage = 0;
 int imageSet = 0;
 #define MODE 5
-#define IMAGESETS 2
+#define IMAGESETS 4
+#define NUMSHADERS 3
 const char* text[] = {"Image 0","Image 1","Mix","Difference","False Color"};
 
 //
@@ -75,6 +77,17 @@ void display(GLFWwindow* window)
        }
               
    }
+   else if (shaderNum == 2)
+   {
+       int id = glGetUniformLocation(shaders[2], "img0");
+       glUniform1i(id, image1);
+       //  Second image
+       id = glGetUniformLocation(shaders[2], "img1");
+       glUniform1i(id, image2);
+       //  third image
+       id = glGetUniformLocation(shaders[2], "img2");
+       glUniform1i(id, migrateImage);
+   }
    else
    {
        //somehow there is no shader
@@ -116,7 +129,12 @@ void display(GLFWwindow* window)
    //  Display parameters
    SetColor(1,1,1);
    glWindowPos2i(5,5);
-   Print("Zoom=%.1f Offset=%f,%f Mode=%s Image Set=%d",zoom,X,Y,text[mode], imageSet + 1);
+   if(shaderNum == 0)
+        Print("Zoom=%.1f Offset=%f,%f Mode=%s Image Set=%d",zoom,X,Y,text[mode], imageSet + 1);
+   else if(shaderNum == 1)
+       Print("Zoom=%.1f Offset=%f,%f", zoom, X, Y);
+   else if(shaderNum == 2)
+       Print("Zoom=%.1f Offset=%f,%f Wally=%d Migrate=%d", zoom, X, Y, imageSet + 1, migrateImage / 2);
    if (mode==2) Print(" Fraction=%.1f",frac);
    //  Render the scene and make it visible
    ErrCheck("display");
@@ -181,9 +199,42 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
        image1 = imageSet * 2;
        image2 = image1 + 1;
    }
-   //  Cycle modes forward
+   //  Cycle migrate forward
+   else if (key == GLFW_KEY_H)
+   {
+       migrateImage += 2;
+       if (migrateImage == IMAGESETS * 2)
+       {
+           migrateImage = 0;
+       }
+   }
+   //  Cycle migrate backwards
+   else if (key == GLFW_KEY_G)
+   {
+       migrateImage -= 2;
+       if (migrateImage < 0)
+       {
+           migrateImage = (IMAGESETS -1) * 2;
+       }
+   }
+   //  Change Shader
    else if (key == GLFW_KEY_I)
-       shaderNum = shaderNum ? 0 : 1;
+   {
+       shaderNum += 1;
+       if (shaderNum >= NUMSHADERS)
+       {
+           shaderNum = 0;
+       }
+   }
+   //  Change Shader
+   else if (key == GLFW_KEY_U)
+   {
+       shaderNum -= 1;
+       if (shaderNum < 0)
+       {
+           shaderNum = NUMSHADERS - 1;
+       }
+   }
    //  Toggle axes
    else if (key == GLFW_KEY_A)
       axes = !axes;
@@ -247,15 +298,31 @@ int main(int argc,char* argv[])
    glActiveTexture(GL_TEXTURE1);
    LoadTexBMP("wallys/wallys1.bmp");
 
+   //second set
    glActiveTexture(GL_TEXTURE2);
    LoadTexBMP("wallysGone/wallysGone2.bmp");
 
    glActiveTexture(GL_TEXTURE3);
    LoadTexBMP("wallys/wallys2.bmp");
 
+   //third set
+   glActiveTexture(GL_TEXTURE4);
+   LoadTexBMP("wallysGone/wallysGone3.bmp");
+
+   glActiveTexture(GL_TEXTURE5);
+   LoadTexBMP("wallys/wallys3.bmp");
+
+   //fourth set
+   glActiveTexture(GL_TEXTURE6);
+   LoadTexBMP("wallysGone/wallysGone1.bmp");
+
+   glActiveTexture(GL_TEXTURE7);
+   LoadTexBMP("wallys/wallys1.bmp");
+
    //  Load shaders
    shaders[0] = CreateShaderProg(NULL, "imgproc.frag");
    shaders[1] = CreateShaderProg(NULL, "allWallys.frag");
+   shaders[2] = CreateShaderProg(NULL, "migrateWally.frag");
 
    //  Event loop
    ErrCheck("init");

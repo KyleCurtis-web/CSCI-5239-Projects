@@ -291,33 +291,33 @@ int main(int argc,char* argv[])
    //  Initialize GLFW
    GLFWwindow* window = InitWindow("Kyle Curtis: HW6",1,600,600,&reshape,&key);
 
-   //  Load first image to texture unit 0
+   //first image set
    glActiveTexture(GL_TEXTURE0);
-   LoadTexBMP("wallysGone/wallysGone1.bmp");
-   //  Load second image to texture unit 1
+   LoadTexBMP("wallysGone1.bmp");
+
    glActiveTexture(GL_TEXTURE1);
-   LoadTexBMP("wallys/wallys1.bmp");
+   LoadTexBMP("wallys1.bmp");
 
    //second set
    glActiveTexture(GL_TEXTURE2);
-   LoadTexBMP("wallysGone/wallysGone2.bmp");
+   LoadTexBMP("wallysGone2.bmp");
 
    glActiveTexture(GL_TEXTURE3);
-   LoadTexBMP("wallys/wallys2.bmp");
+   LoadTexBMP("wallys2.bmp");
 
    //third set
    glActiveTexture(GL_TEXTURE4);
-   LoadTexBMP("wallysGone/wallysGone3.bmp");
+   LoadTexBMP("wallysGone3.bmp");
 
    glActiveTexture(GL_TEXTURE5);
-   LoadTexBMP("wallys/wallys3.bmp");
+   LoadTexBMP("wallys3.bmp");
 
    //fourth set
    glActiveTexture(GL_TEXTURE6);
-   LoadTexBMP("wallysGone/wallysGone4.bmp");
+   LoadTexBMP("wallysGone4.bmp");
 
    glActiveTexture(GL_TEXTURE7);
-   LoadTexBMP("wallys/wallys4.bmp");
+   LoadTexBMP("wallys4.bmp");
 
    //  Load shaders
    shaders[0] = CreateShaderProg(NULL, "imgproc.frag");

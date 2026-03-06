@@ -26,6 +26,18 @@ int shader=0;  // Shader
 //  Vertex buffer objects
 unsigned int vbo = 0;   // Vertex buffer objects
 const char* text[] = {"Flat","Normal Map in Tangent Space","Normal Map in Model Space"};
+const char* normalText[] = { "Plain Wally", "Just Wally", "Whole Picture", "Origional Image" };
+
+//textures and normal maps
+const int NUMTEXTURES = 4;
+const int NUMNORMALS = 4;
+int texNum = 0;
+int normalMode = 0;
+unsigned int textures[] = { 0,0,0,0};
+unsigned int junk[] = { 0,0,0,0 };
+unsigned int plain[] = { 0,0,0,0 };
+unsigned int whole[] = { 0,0,0,0 };
+unsigned int just[] = { 0,0,0,0 };
 
 //  Cube vertex, normal, tangent and texture data
 const float vertex[] =
@@ -253,6 +265,8 @@ void display(GLFWwindow* window)
    //  Display parameters
    SetColor(1,1,1);
    Axes(1.5);
+   glWindowPos2i(5, 25);
+   Print("Texture=%d, Normal Map = %s", texNum, normalText[normalMode]);
    glWindowPos2i(5,5);
    Print("Angle=%d,%d FPS=%d Dim=%.1f Projection=%s Mode=%s",th,ph,FramesPerSecond(),dim,fov>0?"Perpective":"Orthogonal",text[mode]);
    //  Render the scene and make it visible
@@ -286,6 +300,50 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Switch objects
    else if (key==GLFW_KEY_O)
       obj = 1-obj;
+   //switch textures
+   else if (key == GLFW_KEY_T)
+   {
+       texNum = (texNum + 1) % NUMTEXTURES;//update texNum
+       tex = textures[texNum];//update texture
+       //update normal
+       if (normalMode == 1)//just
+       {
+           nml = just[texNum];
+       }
+       else if (normalMode == 2)//whole
+       {
+           nml = whole[texNum];
+       }
+       else if (normalMode == 3)//oritional
+       {
+           nml = junk[texNum];
+       }
+       else//mode 0, plain
+       {
+           nml = plain[texNum];
+       }
+   }
+   //switch normal sets
+   else if (key == GLFW_KEY_N)
+   {
+       normalMode = (normalMode + 1) % NUMNORMALS;
+       if (normalMode == 1)//just
+       {
+           nml = just[texNum];
+       }
+       else if (normalMode == 2)//whole
+       {
+           nml = whole[texNum];
+       }
+       else if (normalMode == 3)//oritional
+       {
+           nml = junk[texNum];
+       }
+       else//mode 0, plain
+       {
+           nml = plain[texNum];
+       }
+   }
    //  Light movement
    else if (key==GLFW_KEY_S)
       move = 1-move;
@@ -350,8 +408,43 @@ int main(int argc,char* argv[])
    //  Load shaders
    shader = CreateShaderProg("normal.vert","normal.frag");
    //  Load textures
-   tex = LoadTexBMP("brickwall.bmp");
-   nml = LoadTexBMP("brickwall_normal.bmp");
+   //tex = LoadTexBMP("brickwall.bmp");
+   //nml = LoadTexBMP("brickwall_normal.bmp");
+
+   //base textures
+   textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
+   textures[1] = LoadTexBMP("NoWallys/wallysGone2.bmp");
+   textures[2] = LoadTexBMP("NoWallys/wallysGone3.bmp");
+   textures[3] = LoadTexBMP("NoWallys/wallysGone4.bmp");
+
+   //junk textures (the origional pictures
+   junk[0] = LoadTexBMP("Wallys/wallys1.bmp");
+   junk[1] = LoadTexBMP("Wallys/wallys2.bmp");
+   junk[2] = LoadTexBMP("Wallys/wallys3.bmp");
+   junk[3] = LoadTexBMP("Wallys/wallys4.bmp");
+
+   //plain, just blue and a colored wally
+   plain[0] = LoadTexBMP("PlainWallys/plainwallys1.bmp");
+   plain[1] = LoadTexBMP("PlainWallys/plainwallys2.bmp");
+   plain[2] = LoadTexBMP("PlainWallys/plainwallys3.bmp");
+   plain[3] = LoadTexBMP("PlainWallys/plainwallys4.bmp");
+
+   //just, convert plain into a normal map
+   just[0] = LoadTexBMP("JustWallys/justwallys1.bmp");
+   just[1] = LoadTexBMP("JustWallys/justwallys2.bmp");
+   just[2] = LoadTexBMP("JustWallys/justwallys3.bmp");
+   just[3] = LoadTexBMP("JustWallys/justwallys4.bmp");
+
+   //whole, the entire junk texture turned into a normal map
+   whole[0] = LoadTexBMP("WholeWallys/wholewallys1.bmp");
+   whole[1] = LoadTexBMP("WholeWallys/wholewallys2.bmp");
+   whole[2] = LoadTexBMP("WholeWallys/wholewallys3.bmp");
+   whole[3] = LoadTexBMP("WholeWallys/wholewallys4.bmp");
+
+   //
+   tex = textures[0];
+   //nml = LoadTexBMP("NormalWallys/wallys1Normal.bmp");
+   nml = plain[0];
 
    //  Copy vertex data to VBO
    glGenBuffers(1,&vbo);

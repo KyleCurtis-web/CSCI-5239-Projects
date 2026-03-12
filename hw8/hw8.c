@@ -12,7 +12,7 @@
  *  ESC        Exit
  */
 #include "CSCIx239.h"
-int mode=0;    // Flat/Normal map
+int mode=3;    // Flat/Normal map
 int move=1;    // Moving light
 int th=0,ph=0; // View angles
 int zh=0;      // Light azimuth
@@ -26,20 +26,15 @@ int shader=0;  // Shader
 //  Vertex buffer objects
 unsigned int vbo = 0;   // Vertex buffer objects
 const char* text[] = {"Flat","Normal Map in Tangent Space","Normal Map in Model Space", "Height Map"};
-const char* normalText[] = { "Plain Wally", "Just Wally", "Whole Picture", "Origional Image" };
+const char* textureText[] = {"Bricks", "Wood", "Stucco", "Wally"};
 
 //textures and normal maps
 const int NUMTEXTURES = 4;
 const int NUMNORMALS = 4;
 int texNum = 0;
-int normalMode = 0;
 unsigned int textures[] = { 0,0,0,0};
-unsigned int junk[] = { 0,0,0,0 };
-unsigned int plain[] = { 0,0,0,0 };
-unsigned int whole[] = { 0,0,0,0 };
-unsigned int just[] = { 0,0,0,0 };
-
-unsigned int height[] = { 0,0,0,0 };
+unsigned int normals[] = { 0,0,0,0 };
+unsigned int heights[] = { 0,0,0,0 };
 
 //  Cube vertex, normal, tangent and texture data
 const float vertex[] =
@@ -196,6 +191,7 @@ const float vertex[] =
     0.500,-1.000, 0.866,   0.000,-1.000, 0.000,   1.000, 0.000, 0.000,   0.500,-0.866,
     0.259,-1.000, 0.966,   0.000,-1.000, 0.000,   1.000, 0.000, 0.000,   0.259,-0.966,
    -0.000,-1.000, 1.000,   0.000,-1.000, 0.000,   1.000, 0.000, 0.000,  -0.000,-1.000,
+
    };
 
 //
@@ -272,9 +268,9 @@ void display(GLFWwindow* window)
    SetColor(1,1,1);
    Axes(1.5);
    glWindowPos2i(5, 25);
-   Print("Texture=%d, Normal Map = %s", texNum, normalText[normalMode]);
+   Print("Mode=%s Texture=%s", text[mode], textureText[texNum]);
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d FPS=%d Dim=%.1f Projection=%s Mode=%s",th,ph,FramesPerSecond(),dim,fov>0?"Perpective":"Orthogonal",text[mode]);
+   Print("Angle=%d,%d FPS=%d Dim=%.1f Projection=%s",th,ph,FramesPerSecond(),dim,fov>0?"Perpective":"Orthogonal");
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -312,43 +308,9 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
        texNum = (texNum + 1) % NUMTEXTURES;//update texNum
        tex = textures[texNum];//update texture
        //update normal
-       if (normalMode == 1)//just
-       {
-           nml = just[texNum];
-       }
-       else if (normalMode == 2)//whole
-       {
-           nml = whole[texNum];
-       }
-       else if (normalMode == 3)//oritional
-       {
-           nml = junk[texNum];
-       }
-       else//mode 0, plain
-       {
-           nml = plain[texNum];
-       }
-   }
-   //switch normal sets
-   else if (key == GLFW_KEY_N)
-   {
-       normalMode = (normalMode + 1) % NUMNORMALS;
-       if (normalMode == 1)//just
-       {
-           nml = just[texNum];
-       }
-       else if (normalMode == 2)//whole
-       {
-           nml = whole[texNum];
-       }
-       else if (normalMode == 3)//oritional
-       {
-           nml = junk[texNum];
-       }
-       else//mode 0, plain
-       {
-           nml = plain[texNum];
-       }
+       nml = normals[texNum];
+       hgt = heights[texNum];
+        
    }
    //  Light movement
    else if (key==GLFW_KEY_S)
@@ -409,7 +371,7 @@ void reshape(GLFWwindow* window,int width,int height)
 int main(int argc,char* argv[])
 {
    //  Initialize GLFW
-   GLFWwindow* window = InitWindow("Kyle Curtis: HW7",0,600,600,&reshape,&key);
+   GLFWwindow* window = InitWindow("Kyle Curtis: HW8",0,600,600,&reshape,&key);
 
    //  Load shaders
    shader = CreateShaderProg("normal.vert","normal.frag");
@@ -418,45 +380,32 @@ int main(int argc,char* argv[])
    //nml = LoadTexBMP("brickwall_normal.bmp");
 
    //base textures
-   textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
-   //textures[0] = LoadTexBMP("brickwall.bmp");
-   textures[1] = LoadTexBMP("NoWallys/wallysGone2.bmp");
-   textures[2] = LoadTexBMP("NoWallys/wallysGone3.bmp");
-   textures[3] = LoadTexBMP("NoWallys/wallysGone4.bmp");
+   textures[0] = LoadTexBMP("bricks_diffuse.bmp");
+   textures[1] = LoadTexBMP("wood_diffuse.bmp");
+   textures[2] = LoadTexBMP("stucco_diffuse.bmp");
+   textures[3] = LoadTexBMP("wallysGone1.bmp");
+   //textures[3] = LoadTexBMP("NoWallys/wallysGone4.bmp");
 
-   //junk textures (the origional pictures
-   junk[0] = LoadTexBMP("Wallys/wallys1.bmp");
-   junk[1] = LoadTexBMP("Wallys/wallys2.bmp");
-   junk[2] = LoadTexBMP("Wallys/wallys3.bmp");
-   junk[3] = LoadTexBMP("Wallys/wallys4.bmp");
-
-   //plain, just blue and a colored wally
-   plain[0] = LoadTexBMP("PlainWallys/plainwallys1.bmp");
-   plain[1] = LoadTexBMP("PlainWallys/plainwallys2.bmp");
-   plain[2] = LoadTexBMP("PlainWallys/plainwallys3.bmp");
-   plain[3] = LoadTexBMP("PlainWallys/plainwallys4.bmp");
-
-   //just, convert plain into a normal map
-   just[0] = LoadTexBMP("JustWallys/justwallys1.bmp");
-   just[1] = LoadTexBMP("JustWallys/justwallys2.bmp");
-   just[2] = LoadTexBMP("JustWallys/justwallys3.bmp");
-   just[3] = LoadTexBMP("JustWallys/justwallys4.bmp");
-
-   //whole, the entire junk texture turned into a normal map
-   whole[0] = LoadTexBMP("WholeWallys/wholewallys1.bmp");
-   whole[1] = LoadTexBMP("WholeWallys/wholewallys2.bmp");
-   whole[2] = LoadTexBMP("WholeWallys/wholewallys3.bmp");
-   whole[3] = LoadTexBMP("WholeWallys/wholewallys4.bmp");
+   //normal maps
+   normals[0] = LoadTexBMP("bricks_normal.bmp");
+   normals[1] = LoadTexBMP("wood_normal.bmp");
+   normals[2] = LoadTexBMP("stucco_normal.bmp");
+   normals[3] = LoadTexBMP("wholewallys1.bmp");
 
    //height maps
-   height[0] = LoadTexBMP("Height/height1.bmp");
-
-   //
+   heights[0] = LoadTexBMP("bricks_disp.bmp");
+   heights[1] = LoadTexBMP("wood_height.bmp");
+   heights[2] = LoadTexBMP("stucco_height.bmp");
+   heights[3] = LoadTexBMP("height1.bmp");
+   //initial values
    tex = textures[0];
-   //nml = LoadTexBMP("NormalWallys/wallys1Normal.bmp");
-   nml = plain[0];
+   nml = normals[0];
+   hgt = heights[0];
 
-   hgt = height[0];
+   //tex = LoadTexBMP("bricks_diffuse.bmp");
+   //nml = LoadTexBMP("bricks_normal.bmp");
+   //hgt = LoadTexBMP("bricks_disp.bmp");
+
 
    //  Copy vertex data to VBO
    glGenBuffers(1,&vbo);

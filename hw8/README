@@ -1,9 +1,13 @@
 hw8:
 Continueing from HW7
-Using normal maps to add new details to textures
+Adding height maps and parallax mapping to add detail to textures
 
-Use T to cycle through the textures, then N to cycle through the normal maps for that texture.
-Also, make sure to hit M so that the normals are actually being calculated
+Compare flat textures, to textures with bump maps, and finally with both normal maps and a height map
+Cycle through with M
+Cycle through textures with T
+
+The height map setting It works better on wood and bricks, because they are more consistent height wise.
+Wally and Stucco have a bunch of small bumps which got exagerated
 
 
 CSCI4239/5239 Spring 2026
@@ -14,7 +18,6 @@ Key bindings
   m          Toggle shaders
   o          Change objects
   t			 Change textures
-  n			 Change normal map
   s          Toggle light movement
   <>+-       Move light
   arrows     Change view angle

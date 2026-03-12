@@ -12,9 +12,12 @@ uniform int mode;
 //  Textures and normal map
 uniform sampler2D tex;
 uniform sampler2D nml;
+uniform sampler2D hgt;
 
 void main()
 {
+   vec2 texCoords = gl_TexCoord[0].xy;
+
    //  Normalize after interpolation
    vec3 N = normalize(Normal);
    vec3 T = normalize(Tangent);
@@ -35,6 +38,23 @@ void main()
    //  Transform normal map to model space
    else if (mode==2)
       N = TBN*normalize(vec3(2*texture2D(nml,gl_TexCoord[0].xy)-1));
+   //hgt map
+   else if(mode==3)
+   {
+      //start by transforming L and V to tangent space
+      N = normalize(vec3(2*texture2D(nml,gl_TexCoord[0].xy)-1));
+      TBN = transpose(TBN);
+      L = TBN*L;
+      V = TBN*V;
+
+      float height = texture2D(hgt, gl_TexCoord[0].xy).r;
+      vec2 p = (V.xy / V.z) * (height * 0.1); //the 0.1 is the height scale
+      texCoords = texCoords - p;
+
+      N = vec3(texture2D(nml, texCoords));
+      N = normalize(N * 2.0 - 1.0);
+
+   }
 
    //  Diffuse light is cosine of light and normal vectors
    float Id = max(dot(L,N) , 0.0);
@@ -47,5 +67,5 @@ void main()
               + Is*gl_FrontLightProduct[0].specular;
 
    //  Pixel color
-   gl_FragColor = color*texture2D(tex,gl_TexCoord[0].xy);
+   gl_FragColor = color*texture2D(tex,texCoords);
 }

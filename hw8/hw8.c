@@ -18,14 +18,14 @@ int th=0,ph=0; // View angles
 int zh=0;      // Light azimuth
 float YL=1;    // Light elevation
 int fov=57;    // Field of view (for perspective)
-int tex,nml;   // Textures
+int tex,nml,hgt;   // Textures
 int obj=0;     // Object
 float asp=1;   // Aspect ratio
 float dim=3;   // Size of world
 int shader=0;  // Shader
 //  Vertex buffer objects
 unsigned int vbo = 0;   // Vertex buffer objects
-const char* text[] = {"Flat","Normal Map in Tangent Space","Normal Map in Model Space"};
+const char* text[] = {"Flat","Normal Map in Tangent Space","Normal Map in Model Space", "Height Map"};
 const char* normalText[] = { "Plain Wally", "Just Wally", "Whole Picture", "Origional Image" };
 
 //textures and normal maps
@@ -38,6 +38,8 @@ unsigned int junk[] = { 0,0,0,0 };
 unsigned int plain[] = { 0,0,0,0 };
 unsigned int whole[] = { 0,0,0,0 };
 unsigned int just[] = { 0,0,0,0 };
+
+unsigned int height[] = { 0,0,0,0 };
 
 //  Cube vertex, normal, tangent and texture data
 const float vertex[] =
@@ -216,13 +218,17 @@ void display(GLFWwindow* window)
    glBindTexture(GL_TEXTURE_2D,tex);
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_2D,nml);
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_2D, hgt);
    glActiveTexture(GL_TEXTURE0);
+
 
    //  Select shader
    glUseProgram(shader);
    glUniform1i(glGetUniformLocation(shader,"mode"),mode);
    glUniform1i(glGetUniformLocation(shader,"tex"),0);
    glUniform1i(glGetUniformLocation(shader,"nml"),1);
+   glUniform1i(glGetUniformLocation(shader, "hgt"), 2);
 
    //  Define arrays
    glBindBuffer(GL_ARRAY_BUFFER,vbo);
@@ -294,9 +300,9 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
       th = ph = 0;
    //  Switch shaders
    else if (key==GLFW_KEY_M && shift)
-      mode = (mode+2)%3;
+      mode = (mode+2)%4;
    else if (key==GLFW_KEY_M)
-      mode = (mode+1)%3;
+      mode = (mode+1)%4;
    //  Switch objects
    else if (key==GLFW_KEY_O)
       obj = 1-obj;
@@ -412,8 +418,8 @@ int main(int argc,char* argv[])
    //nml = LoadTexBMP("brickwall_normal.bmp");
 
    //base textures
-   //textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
-   textures[0] = LoadTexBMP("brickwall.bmp");
+   textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
+   //textures[0] = LoadTexBMP("brickwall.bmp");
    textures[1] = LoadTexBMP("NoWallys/wallysGone2.bmp");
    textures[2] = LoadTexBMP("NoWallys/wallysGone3.bmp");
    textures[3] = LoadTexBMP("NoWallys/wallysGone4.bmp");
@@ -442,10 +448,15 @@ int main(int argc,char* argv[])
    whole[2] = LoadTexBMP("WholeWallys/wholewallys3.bmp");
    whole[3] = LoadTexBMP("WholeWallys/wholewallys4.bmp");
 
+   //height maps
+   height[0] = LoadTexBMP("Height/height1.bmp");
+
    //
    tex = textures[0];
    //nml = LoadTexBMP("NormalWallys/wallys1Normal.bmp");
    nml = plain[0];
+
+   hgt = height[0];
 
    //  Copy vertex data to VBO
    glGenBuffers(1,&vbo);

@@ -43,13 +43,13 @@ unsigned int just[] = { 0,0,0,0 };
 const float vertex[] =
 {
 //  X  Y  Z   Nx Ny Nz   Tx Ty Tz   s t
-   // Front
-   -1,-1, 1,   0, 0, 1,   1, 0, 0,  0,1,
-    1,-1, 1,   0, 0, 1,   1, 0, 0,  1,1,
-    1, 1, 1,   0, 0, 1,   1, 0, 0,  1,0,
-    1, 1, 1,   0, 0, 1,   1, 0, 0,  1,0,
-   -1, 1, 1,   0, 0, 1,   1, 0, 0,  0,0,
-   -1,-1, 1,   0, 0, 1,   1, 0, 0,  0,1,
+   // Front (Texture data corrected)
+   -1,-1, 1,   0, 0, 1,   1, 0, 0,  0,0,
+    1,-1, 1,   0, 0, 1,   1, 0, 0,  1,0,
+    1, 1, 1,   0, 0, 1,   1, 0, 0,  1,1,
+    1, 1, 1,   0, 0, 1,   1, 0, 0,  1,1,
+   -1, 1, 1,   0, 0, 1,   1, 0, 0,  0,1,
+   -1,-1, 1,   0, 0, 1,   1, 0, 0,  0,0,
    // Back
     1,-1,-1,   0, 0,-1,  -1, 0, 0,  0,1,
    -1,-1,-1,   0, 0,-1,  -1, 0, 0,  1,1,
@@ -412,7 +412,8 @@ int main(int argc,char* argv[])
    //nml = LoadTexBMP("brickwall_normal.bmp");
 
    //base textures
-   textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
+   //textures[0] = LoadTexBMP("NoWallys/wallysGone1.bmp");
+   textures[0] = LoadTexBMP("brickwall.bmp");
    textures[1] = LoadTexBMP("NoWallys/wallysGone2.bmp");
    textures[2] = LoadTexBMP("NoWallys/wallysGone3.bmp");
    textures[3] = LoadTexBMP("NoWallys/wallysGone4.bmp");

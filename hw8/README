@@ -5,21 +5,6 @@ Using normal maps to add new details to textures
 Use T to cycle through the textures, then N to cycle through the normal maps for that texture.
 Also, make sure to hit M so that the normals are actually being calculated
 
-I took the NoWally textures from last week and used them as textures here.
-Then I used the matching Wally textures to build normal maps.
-Some of them I only gave defined normals to Wally, others the whole image.
-Some of them I actually converted into normal maps (correctly colored with normals), others I just left the colors as is.
-
-Used to find where wally was in images he was removed from
-4 normal modes
-plain: normal colored wally on a blue background
-just: plain converted to a normal map
-whole: whole origional image converted to normal map
-junk/origional: the origional image, junk data that doesn't make sence as a normal
-
-plain and junk/origional both have their normals oriented incorrectly, so when used to calculate lighting it's nonsense.
-just highlights the ghost of wally in the image
-Whole highlights ALL the edges in the origional image, including where wally is, which is still highlighted on the texture without wally
 
 CSCI4239/5239 Spring 2026
 

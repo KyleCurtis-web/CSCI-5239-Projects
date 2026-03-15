@@ -1,0 +1,17 @@
+ex18: Particle Shaders
+
+Willem A. (Vlakkies) Schreuder
+CSCI4239/5239 Spring 2026
+
+
+Demonstrate a small particle shader using the Orange Book confetti cannon
+and a large particle shader using the bambi fire.
+
+
+Key bindings
+  m/M        Toggle between particle shaders
+  a          Toggle axes
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

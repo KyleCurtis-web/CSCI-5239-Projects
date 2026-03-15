@@ -1,0 +1,10 @@
+hw9: 
+
+based off of ex19 and ex18
+
+Key bindings
+  xXyYzZ     Change location or zoom
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

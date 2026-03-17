@@ -5,6 +5,8 @@
 
 uniform vec3 xyz[125];
 
+varying float instanceIdentifier;
+
 vec4 phong()
 {
    //  P is the vertex coordinate on body
@@ -43,4 +45,7 @@ void main()
    gl_TexCoord[0] = gl_MultiTexCoord0;
    //  Return fixed transform coordinates for this vertex
    gl_Position = gl_ModelViewProjectionMatrix * P;
+   //ID the instance
+   instanceIdentifier = float(gl_InstanceID);
+
 }

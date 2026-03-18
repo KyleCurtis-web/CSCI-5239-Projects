@@ -14,83 +14,19 @@ int th=0,ph=0;  //  View angles
 int fov=57;     //  Field of view (for perspective)
 int tex =0;      //  Texture
 int wally = 0;   //wally texture
+int grass = 0;   //grass texture
 float asp=1;    //  Aspect ratio
 float dim=5;    //  Size of world
 int shader = 0; //  Shaders
-float xyz[375]; //  125 vec3 locations 
+int defaultShader = 0;
+float xyz[75]; //  125 vec3 locations 
 
 
-int numInstances = 9; //the number of instances
-
-//  Icosahedron data stored in VBO
-//static unsigned int vbo=0;
-//static const int n      = 60;                //  Number of vertexes
-//static const int stride = 11*sizeof(float);  //  Stride (bytes)
-//  Vertex coordinates, normals, textures and colors
-//static const float data[] =
-//{
-//// X      Y      Z       Nx     Ny     Nz    S   T   R G B 
-// 0.276, 0.851, 0.447,  0.471, 0.342, 0.761, 0.0,0.0, 0,0,1,
-// 0.894, 0.000, 0.447,  0.471, 0.342, 0.761, 1.0,0.0, 0,0,1,
-// 0.000, 0.000, 1.000,  0.471, 0.342, 0.761, 0.5,1.0, 0,0,1,
-//-0.724, 0.526, 0.447, -0.180, 0.553, 0.761, 0.0,0.0, 0,1,0,
-// 0.276, 0.851, 0.447, -0.180, 0.553, 0.761, 1.0,0.0, 0,1,0,
-// 0.000, 0.000, 1.000, -0.180, 0.553, 0.761, 0.5,1.0, 0,1,0,
-//-0.724,-0.526, 0.447, -0.582, 0.000, 0.762, 0.0,0.0, 0,1,1,
-//-0.724, 0.526, 0.447, -0.582, 0.000, 0.762, 1.0,0.0, 0,1,1,
-// 0.000, 0.000, 1.000, -0.582, 0.000, 0.762, 0.5,1.0, 0,1,1,
-// 0.276,-0.851, 0.447, -0.180,-0.553, 0.761, 0.0,0.0, 1,0,1,
-//-0.724,-0.526, 0.447, -0.180,-0.553, 0.761, 1.0,0.0, 1,0,1,
-// 0.000, 0.000, 1.000, -0.180,-0.553, 0.761, 0.5,1.0, 1,0,1,
-// 0.894, 0.000, 0.447,  0.471,-0.342, 0.761, 0.0,0.0, 1,1,0,
-// 0.276,-0.851, 0.447,  0.471,-0.342, 0.761, 1.0,0.0, 1,1,0,
-// 0.000, 0.000, 1.000,  0.471,-0.342, 0.761, 0.5,1.0, 1,1,0,
-// 0.000, 0.000,-1.000,  0.180, 0.553,-0.761, 0.0,0.0, 0,0,1,
-// 0.724, 0.526,-0.447,  0.180, 0.553,-0.761, 1.0,0.0, 0,0,1,
-//-0.276, 0.851,-0.447,  0.180, 0.553,-0.761, 0.5,1.0, 0,0,1,
-// 0.000, 0.000,-1.000, -0.471, 0.342,-0.761, 0.0,0.0, 0,1,0,
-//-0.276, 0.851,-0.447, -0.471, 0.342,-0.761, 1.0,0.0, 0,1,0,
-//-0.894, 0.000,-0.447, -0.471, 0.342,-0.761, 0.5,1.0, 0,1,0,
-// 0.000, 0.000,-1.000, -0.471,-0.342,-0.761, 0.0,0.0, 0,1,1,
-//-0.894, 0.000,-0.447, -0.471,-0.342,-0.761, 1.0,0.0, 0,1,1,
-//-0.276,-0.851,-0.447, -0.471,-0.342,-0.761, 0.5,1.0, 0,1,1,
-// 0.000, 0.000,-1.000,  0.180,-0.553,-0.761, 0.0,0.0, 1,0,0,
-//-0.276,-0.851,-0.447,  0.180,-0.553,-0.761, 1.0,0.0, 1,0,0,
-// 0.724,-0.526,-0.447,  0.180,-0.553,-0.761, 0.5,1.0, 1,0,0,
-// 0.000, 0.000,-1.000,  0.582, 0.000,-0.762, 0.0,0.0, 1,0,1,
-// 0.724,-0.526,-0.447,  0.582, 0.000,-0.762, 1.0,0.0, 1,0,1,
-// 0.724, 0.526,-0.447,  0.582, 0.000,-0.762, 0.5,1.0, 1,0,1,
-// 0.894, 0.000, 0.447,  0.761, 0.552, 0.180, 0.0,0.0, 1,1,0,
-// 0.276, 0.851, 0.447,  0.761, 0.552, 0.180, 1.0,0.0, 1,1,0,
-// 0.724, 0.526,-0.447,  0.761, 0.552, 0.180, 0.5,1.0, 1,1,0,
-// 0.276, 0.851, 0.447, -0.291, 0.894, 0.179, 0.0,0.0, 0,0,1,
-//-0.724, 0.526, 0.447, -0.291, 0.894, 0.179, 1.0,0.0, 0,0,1,
-//-0.276, 0.851,-0.447, -0.291, 0.894, 0.179, 0.5,1.0, 0,0,1,
-//-0.724, 0.526, 0.447, -0.940, 0.000, 0.179, 0.0,0.0, 0,1,0,
-//-0.724,-0.526, 0.447, -0.940, 0.000, 0.179, 1.0,0.0, 0,1,0,
-//-0.894, 0.000,-0.447, -0.940, 0.000, 0.179, 0.5,1.0, 0,1,0,
-//-0.724,-0.526, 0.447, -0.291,-0.894, 0.179, 0.0,0.0, 0,1,1,
-// 0.276,-0.851, 0.447, -0.291,-0.894, 0.179, 1.0,0.0, 0,1,1,
-//-0.276,-0.851,-0.447, -0.291,-0.894, 0.179, 0.5,1.0, 0,1,1,
-// 0.276,-0.851, 0.447,  0.761,-0.552, 0.180, 0.0,0.0, 1,0,0,
-// 0.894, 0.000, 0.447,  0.761,-0.552, 0.180, 1.0,0.0, 1,0,0,
-// 0.724,-0.526,-0.447,  0.761,-0.552, 0.180, 0.5,1.0, 1,0,0,
-// 0.276, 0.851, 0.447,  0.291, 0.894,-0.179, 0.0,0.0, 1,0,1,
-//-0.276, 0.851,-0.447,  0.291, 0.894,-0.179, 1.0,0.0, 1,0,1,
-// 0.724, 0.526,-0.447,  0.291, 0.894,-0.179, 0.5,1.0, 1,0,1,
-//-0.724, 0.526, 0.447, -0.761, 0.552,-0.180, 0.0,0.0, 1,1,0,
-//-0.894, 0.000,-0.447, -0.761, 0.552,-0.180, 1.0,0.0, 1,1,0,
-//-0.276, 0.851,-0.447, -0.761, 0.552,-0.180, 0.5,1.0, 1,1,0,
-//-0.724,-0.526, 0.447, -0.761,-0.552,-0.180, 0.0,0.0, 0,0,1,
-//-0.276,-0.851,-0.447, -0.761,-0.552,-0.180, 1.0,0.0, 0,0,1,
-//-0.894, 0.000,-0.447, -0.761,-0.552,-0.180, 0.5,1.0, 0,0,1,
-// 0.276,-0.851, 0.447,  0.291,-0.894,-0.179, 0.0,0.0, 0,1,0,
-// 0.724,-0.526,-0.447,  0.291,-0.894,-0.179, 1.0,0.0, 0,1,0,
-//-0.276,-0.851,-0.447,  0.291,-0.894,-0.179, 0.5,1.0, 0,1,0,
-// 0.894, 0.000, 0.447,  0.940, 0.000,-0.179, 0.0,0.0, 0,1,1,
-// 0.724, 0.526,-0.447,  0.940, 0.000,-0.179, 1.0,0.0, 0,1,1,
-// 0.724,-0.526,-0.447,  0.940, 0.000,-0.179, 0.5,1.0, 0,1,1,
-//};
+int numInstances = 30; //the number of instances default 125
+int randomInstance;
+int heightCap = 10;
+float time;
+int paused = 0;
 
 //F data stored in buffer
 static unsigned int vbo = 0;
@@ -258,12 +194,23 @@ void display(GLFWwindow* window)
    glBindTexture(GL_TEXTURE_2D, wally);
    glActiveTexture(GL_TEXTURE0);
 
+   //update time if not paused
+   if (!paused)
+   {
+       time = glfwGetTime();
+   }
+
    //  Select shader
    glUseProgram(shader);
+   //  Set time
+   int id = glGetUniformLocation(shader, "time");
+   glUniform1f(id, time);
    int loc = glGetUniformLocation(shader,"xyz");
    glUniform1i(glGetUniformLocation(shader, "tex"), 0);
    glUniform1i(glGetUniformLocation(shader, "wally"), 1);
-   glUniform3fv(loc,125,xyz);
+   glUniform1f(glGetUniformLocation(shader, "randomInstance"), randomInstance);
+   glUniform1f(glGetUniformLocation(shader, "heightCap"), heightCap);
+   glUniform3fv(loc,75,xyz);
    //  Initialize VBO on first use
    if (!vbo)
    {
@@ -302,6 +249,29 @@ void display(GLFWwindow* window)
 
    //  Release VBO
    glBindBuffer(GL_ARRAY_BUFFER,0);
+
+   //the ground
+   glUseProgram(defaultShader);
+   double sceneDimensions = 5;
+   double groundEdge = 1;
+
+   glTranslated(0, 0, 0);
+
+   glBindTexture(GL_TEXTURE_2D, grass);//ground texture
+   glBegin(GL_QUADS);
+   glColor3f(0, 1, 0); //ground color (green)
+   for (double len = -sceneDimensions; len < sceneDimensions; len += groundEdge)
+   {
+       for (double wid = -sceneDimensions; wid < sceneDimensions; wid += groundEdge)
+       {
+           glTexCoord2f(0, 0); glVertex3f(wid, 0, len);
+           glTexCoord2f(1, 0); glVertex3f(wid + groundEdge, 0, len);
+           glTexCoord2f(1, 1); glVertex3f(wid + groundEdge, 0, len + groundEdge);
+           glTexCoord2f(0, 1); glVertex3f(wid, 0, len + groundEdge);
+       }
+   }
+   glEnd();
+
    //  Revert to fixed pipeline
    glUseProgram(0);
    glDisable(GL_LIGHTING);
@@ -336,6 +306,12 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Switch between perspective/orthogonal
    else if (key==GLFW_KEY_P)
       fov = fov ? 0 : 57;
+   //  change the randomInstance wally is assigned to
+   else if (key == GLFW_KEY_R)
+       randomInstance = (rand() % (numInstances - 1)) + 1;
+   //  pause/unpause
+   else if (key == GLFW_KEY_T)
+       paused = paused ? 0: 1;
    //  Increase/decrease asimuth
    else if (key==GLFW_KEY_RIGHT)
       th += 5;
@@ -385,19 +361,25 @@ int main(int argc,char* argv[])
 
    //  Load shaders
    shader = CreateShaderProg("instance.vert","instance.frag");
+   defaultShader = CreateShaderProg("stored.vert", "stored.frag");
    //  Load textures
    tex = LoadTexBMP("odlaw.bmp");
    wally = LoadTexBMP("wally.bmp");
+   grass = LoadTexBMP("grass.bmp");
+
+   //setup random number
+   randomInstance = (rand() % (numInstances - 1)) + 1;
+
+   time = glfwGetTime();
 
    //  Initialize locations
    int k=0;
    for (int x=-2;x<=2;x++)
-      for (int y=-2;y<=2;y++)
          for (int z=-2;z<=2;z++)
          {
-            xyz[k++] = x+frand(-0.125,0.125);
-            xyz[k++] = y+frand(-0.125,0.125);
-            xyz[k++] = z+frand(-0.125,0.125);
+            xyz[k++] = x+frand(-1,1);
+            xyz[k++] = frand(0, heightCap);
+            xyz[k++] = z+frand(-1,1);
          }
 
    //  Event loop

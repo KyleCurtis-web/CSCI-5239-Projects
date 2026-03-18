@@ -4,6 +4,8 @@
 //#version 140
 
 uniform vec3 xyz[125];
+uniform   float time;  //  Time
+uniform   float heightCap;
 
 varying float instanceIdentifier;
 
@@ -37,15 +39,33 @@ vec4 phong()
 
 void main()
 {
-   //  Offset
-   vec4 P = gl_Vertex + vec4(3*xyz[gl_InstanceID],1);
+   //ID the instance
+   instanceIdentifier = float(gl_InstanceID);
+
+   //F center, the center of a letter F
+   vec4 center = 3 * vec4(0.5,-0.75,-0.15,0.3);
+
+   //position
+   vec4 P = gl_Vertex;
+
+        //  Offset
+        vec4 offset = vec4(3*xyz[int(mod(gl_InstanceID, 25))],1);
+        center += offset;
+        P += offset;
+
+        float verticalDif = center.y - P.y;
+
+        //fall
+        float fall = 4.9 * time;
+        center.y = mod(center.y - fall, heightCap + 1.5);
+        P.y = center.y - verticalDif;
+
    //  Vertex color (using Phong lighting)
    gl_FrontColor = phong();
+
    //  Texture coordinates
    gl_TexCoord[0] = gl_MultiTexCoord0;
    //  Return fixed transform coordinates for this vertex
    gl_Position = gl_ModelViewProjectionMatrix * P;
-   //ID the instance
-   instanceIdentifier = float(gl_InstanceID);
 
 }

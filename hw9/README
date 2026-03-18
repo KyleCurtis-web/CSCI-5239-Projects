@@ -2,8 +2,15 @@ hw9:
 
 based off of ex19 and ex18
 
+Makes instances of the letter F that rain down from the sky.
+There is a single wally hidden in the oddlaw textures, you can change which F has it with r.
+
 Key bindings
+  t			 Pause/unpause time
+  r			 Change the random wally
   arrows     Change view angle
   PgDn/PgUp  Zoom in and out
   0          Reset view angle
   ESC        Exit
+
+  I spent about 12 hours on this

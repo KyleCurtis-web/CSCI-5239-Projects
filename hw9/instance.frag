@@ -3,13 +3,14 @@
 
 uniform sampler2D tex;
 uniform sampler2D wally;
+uniform float randomInstance;
 
 varying float instanceIdentifier;
 
 void main()
 {
 	const float epsilon = 0.1;
-	if(abs(instanceIdentifier - 5) < epsilon)
+	if(abs(instanceIdentifier - randomInstance) < epsilon)
 	{
 		gl_FragColor = gl_Color * texture2D(wally,gl_TexCoord[0].xy);
 	}

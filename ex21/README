@@ -1,0 +1,23 @@
+ex21: Geodesic Sphere
+
+Willem A. (Vlakkies) Schreuder
+CSCI4239/5239 Spring 2026
+
+This program requires OpenGL 4.0 or above
+
+Demonstrate a tesselation shader by drawing a sphere
+from an icosahedron.
+
+Based on The Little Grashopper tutorial
+http://prideout.net/blog/?p=48
+
+
+Key bindings
+  +/-        Increase/decrease inner and outer
+  i/I        Increase/decrease inner
+  o/O        Increase/decrease outer
+  r          Reset inner/outer levels
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

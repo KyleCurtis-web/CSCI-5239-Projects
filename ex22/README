@@ -1,0 +1,24 @@
+ex22: Compute Shaders
+
+Willem A. (Vlakkies) Schreuder
+CSCI4239/5239 Spring 2026
+
+
+Demonstrate a compute shader with particle
+Derived from Mike Bailey's compute shader example
+
+NOTE:  I use glDispatchComputeGroupSizeARB so that I can
+change the size of a group at run time.
+This is not always well supported so you may need
+to change this to glDispatchCompute and specify only
+the number of groups and then set the group size in 
+in the shader.
+
+
+Key bindings
+  r          Reset
+  a          Toggle axes
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

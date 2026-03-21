@@ -299,7 +299,9 @@ int main(int argc,char* argv[])
    GLFWwindow* window = InitWindow("HW10: Kyle Curtis",0,600,600,&reshape,&key);
 
    //  Compute shader
-   shader = CreateShaderProgCompute("particle.cs");
+   //shader = CreateShaderProgCompute("particle.cs");
+   shader = CreateShaderProgCompute("particleGravity.cs");
+   
    //  Initialize particles
    InitPart();
 

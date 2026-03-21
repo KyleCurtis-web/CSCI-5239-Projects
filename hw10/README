@@ -5,7 +5,6 @@ based off of ex22
 
 Key bindings
   r          Reset
-  a          Toggle axes
   arrows     Change view angle
   PgDn/PgUp  Zoom in and out
   0          Reset view angle

@@ -32,6 +32,11 @@ unsigned int posbuf; //  Position buffer
 unsigned int velbuf; //  Velocity buffer
 unsigned int colbuf; //  Color buffer
 
+const int numShaders = 2;
+unsigned int shaders[] = {0, 0};
+int curShader = 0;
+const char* shaderNames[] = {"Default", "Gravity"};
+
 typedef struct 
 {
   union {float x;float r;};
@@ -204,6 +209,8 @@ void display(GLFWwindow* window)
 
    //  Display parameters
    glDisable(GL_DEPTH_TEST);
+   glWindowPos2i(5, 25);
+   Print("Shader mode = %s", shaderNames[curShader]);
    glWindowPos2i(5,5);
    Print("%d,%d FPS=%d Dim=%.1f Size=%d Count=%d N=%d",th,ph,FramesPerSecond(),dim,nw,ng,n);
    //  Render the scene and make it visible
@@ -232,6 +239,17 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Reset particles
    else if (key == GLFW_KEY_R)
       ResetPart();
+   //  Reset particles
+   else if (key == GLFW_KEY_C)
+   {
+       curShader++;
+       if (curShader >= numShaders)
+       {
+           curShader = 0;
+       }
+       shader = shaders[curShader];
+       ResetPart();
+   }
    //  Right arrow key - increase angle by 5 degrees
    else if (key == GLFW_KEY_RIGHT)
       th += 5;
@@ -299,9 +317,11 @@ int main(int argc,char* argv[])
    GLFWwindow* window = InitWindow("HW10: Kyle Curtis",0,600,600,&reshape,&key);
 
    //  Compute shader
-   //shader = CreateShaderProgCompute("particle.cs");
-   shader = CreateShaderProgCompute("particleGravity.cs");
+   shaders[0] = CreateShaderProgCompute("particle.cs");
+   shaders[1] = CreateShaderProgCompute("particleGravity.cs");
    
+   shader = shaders[0];
+
    //  Initialize particles
    InitPart();
 

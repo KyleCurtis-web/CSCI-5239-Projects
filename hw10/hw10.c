@@ -32,10 +32,10 @@ unsigned int posbuf; //  Position buffer
 unsigned int velbuf; //  Velocity buffer
 unsigned int colbuf; //  Color buffer
 
-const int numShaders = 2;
-unsigned int shaders[] = {0, 0};
+const int numShaders = 7;
+unsigned int shaders[] = {0, 0, 0, 0, 0, 0, 0};
 int curShader = 0;
-const char* shaderNames[] = {"Default", "Gravity"};
+const char* shaderNames[] = {"Default", "Gravity", "Orbit", "Orbit Multi", "Collisions", "Orbit Collisions", "Multi Orbit Collisions"};
 
 typedef struct 
 {
@@ -102,6 +102,59 @@ void ResetPart( )
 
    //  Unset buffer
    glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
+}
+
+//
+//  Reset particles
+//
+void ResetPartRandom()
+{
+    vec4* pos, * vel, * col;
+    //const float SphereY = -500;
+    //const float SphereR = +600;
+    //  Reset position
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, posbuf);
+    pos = (vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, n * sizeof(vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    for (int i = 0; i < n; i++)
+    {   
+        pos[i].x = frand(-1000, 1000);
+        pos[i].y = frand(-1400, +600);
+        pos[i].z = frand(-1000, +1000);
+        pos[i].w = 1;
+    }
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    //  Reset velocities
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velbuf);
+    vel = (vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, n * sizeof(vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    for (int i = 0; i < n; i++)
+    {
+        vel[i].x = frand(-10, +10);
+        vel[i].y = frand(-10, +10);
+        vel[i].z = frand(-10, +10);
+        vel[i].w = 0;
+    }
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    //  Reset colors
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, colbuf);
+    col = (vec4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, n * sizeof(vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    for (int i = 0; i < n; i++)
+    {
+        col[i].r = frand(0.1, 1.0);
+        col[i].g = frand(0.1, 1.0);
+        col[i].b = frand(0.1, 1.0);
+        col[i].a = 1.;
+    }
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    //  Set buffer base
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, posbuf);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, velbuf);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, colbuf);
+
+    //  Unset buffer
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 //
@@ -239,7 +292,10 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
    //  Reset particles
    else if (key == GLFW_KEY_R)
       ResetPart();
-   //  Reset particles
+   //  Reset random positions
+   else if (key == GLFW_KEY_T)
+       ResetPartRandom();
+   //  Change compute Shader
    else if (key == GLFW_KEY_C)
    {
        curShader++;
@@ -247,6 +303,7 @@ void key(GLFWwindow* window,int key,int scancode,int action,int mods)
        {
            curShader = 0;
        }
+
        shader = shaders[curShader];
        ResetPart();
    }
@@ -319,11 +376,20 @@ int main(int argc,char* argv[])
    //  Compute shader
    shaders[0] = CreateShaderProgCompute("particle.cs");
    shaders[1] = CreateShaderProgCompute("particleGravity.cs");
+   shaders[2] = CreateShaderProgCompute("particleOrbit.cs");
+   shaders[3] = CreateShaderProgCompute("particleOrbitMulti.cs");
+   shaders[4] = CreateShaderProgCompute("particleCollisions.cs");
+   shaders[5] = CreateShaderProgCompute("particleOrbitCollisions.cs");
+   shaders[6] = CreateShaderProgCompute("particleOrbitMultiCollisions.cs");
    
    shader = shaders[0];
 
    //  Initialize particles
    InitPart();
+
+   //ng = 20;
+   //nw = 2000;
+   //n = ng * nw;
 
    //  Event loop
    ErrCheck("init");

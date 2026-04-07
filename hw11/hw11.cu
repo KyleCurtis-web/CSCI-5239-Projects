@@ -1,5 +1,5 @@
 /*
- *  CUDA square matrix multiplier
+ *  CUDA matrix factorization
  *
  *  The size of the matrix is width*blocks
  *
@@ -85,6 +85,178 @@ void AxBd(float Ch[],const float Ah[],const float Bh[],const unsigned int Bw,con
    cudaFree(Cd);
 }
 
+// cholensky factorization
+void localCholesky(int n, const float A[], float L[])
+{
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= i; j++) {
+            double sum = 0;
+
+            for (int k = 0; k < j; k++) {
+                // sum += L[i][k] * L[j][k]
+                sum += L[i * n + k] * L[j * n + k];
+            }
+
+            if (i == j) {
+                // L[i][i] = sqrt(A[i][i] - sum)
+                double val = A[i * n + i] - sum;
+                L[i * n + j] = (val > 0) ? sqrt(val) : 0;
+            }
+            else {
+                // L[i][j] = (1.0 / L[j][j] * (A[i][j] - sum))
+                L[i * n + j] = (1.0 / L[j * n + j] * (A[i * n + j] - sum));
+            }
+        }
+    }
+}
+//calculate one diagonal in a cholensky factorization L_jj = sqrt(A_jj - sum from 1-(j-1) of L_jk^2
+//does a single BWxBW diagonal block, one thread per row
+__global__ void Cholesky_Diagonal(float* A, int n, int k, int Bw) {
+    int start = k * Bw;
+    for (int i = 0; i < Bw; i++) {
+        __syncthreads();
+        if (threadIdx.x == 0) { // Thread 0 handles the diagonal element
+            float val = A[(start + i) * n + (start + i)];
+            for (int m = 0; m < i; m++) {
+                val -= A[(start + i) * n + (start + m)] * A[(start + i) * n + (start + m)];
+            }
+            A[(start + i) * n + (start + i)] = sqrtf(val);
+        }
+        __syncthreads();
+
+        // Threads parallelize the panel below the diagonal within this tile
+        if (threadIdx.x > i && threadIdx.x < Bw) {
+            int row = start + threadIdx.x;
+            float val = A[row * n + (start + i)];
+            for (int m = 0; m < i; m++) {
+                val -= A[row * n + (start + m)] * A[(start + i) * n + (start + m)];
+            }
+            A[row * n + (start + i)] = val / A[(start + i) * n + (start + i)];
+        }
+    }
+}
+
+//handle the panel below the diagonal, the column of blocks below the factorized diagonal
+//
+//i > j: L_ij = (1/L_jj) (A_ij - sum from k-(j-1) of L_ik * L_jk
+//the non-summation part of the equation
+__global__ void Cholesky_Panel(float* A, int n, int k_block, int Bw) {
+    int i_block = k_block + 1 + blockIdx.x; // Block index in the panel
+    int row = i_block * Bw + threadIdx.y;
+    int col = k_block * Bw + threadIdx.x;
+
+    for (int k = 0; k < Bw; k++) {
+        float sum = 0;
+        for (int m = 0; m < k; m++) {
+            sum += A[row * n + (k_block * Bw + m)] * A[(k_block * Bw + k) * n + (k_block * Bw + m)];
+        }
+        __syncthreads();
+        // Row-wise triangular solve dependency
+        if (threadIdx.x == k) {
+            A[row * n + col] = (A[row * n + col] - sum) / A[(k_block * Bw + k) * n + (k_block * Bw + k)];
+        }
+        __syncthreads();
+    }
+}
+
+// A_ij = A_ij - L_ik * (L_jk transpose)
+//update remaining lower-triangle blocks
+// just the summation part of the non-diagonal solve (each round is one part of the summation)
+__global__ void Cholesky_Update(float* A, int n, int k_block, int Bw) {
+    int row_block = k_block + 1 + blockIdx.y;
+    int col_block = k_block + 1 + blockIdx.x;
+
+    // Only update the lower triangle blocks
+    if (row_block >= col_block) {
+        int row = row_block * Bw + threadIdx.y;
+        int col = col_block * Bw + threadIdx.x;
+
+        if (row < n && col < n && row >= col) {
+            float sum = 0;
+            for (int k = 0; k < Bw; k++) {
+                // Multiplying elements from the current panel columns
+                sum += A[row * n + (k_block * Bw + k)] * A[col * n + (k_block * Bw + k)];
+            }
+            A[row * n + col] -= sum;
+        }
+    }
+}
+
+//cholenky solved on the GPU
+//first calculate diagonal, second calculate non-diagonal
+void GPUCholensky(float* Ah, float* Lh, int Bn, int Bw) 
+{
+    // Calculate dimensions
+    int n = Bw * Bn;
+    int N = n * n * sizeof(float);
+
+    // Allocate device memory
+    float* Ad;
+    if (cudaMalloc((void**)&Ad, N)) Fatal("Cannot allocate device memory Ad\n");
+
+    // Copy A from host to device
+    if (cudaMemcpy(Ad, Ah, N, cudaMemcpyHostToDevice)) Fatal("Cannot copy A from host to device\n");
+
+    // Define execution configurations
+    dim3 threads(Bw, Bw);
+    // Note: Diagonal kernel usually uses 1D threads (Bw, 1) for the small tile factorization
+
+    // Main Loop: Iterate through blocks (each block dependent on previous block)
+    for (int k = 0; k < Bn; k++) {
+        // 1. Factorize the diagonal block k
+        // Block size 1x1, Threads Bw
+        Cholesky_Diagonal << <1, Bw >> > (Ad, n, k, Bw);
+        if (cudaGetLastError()) Fatal("Diagonal kernel failed\n");
+
+        int remaining = Bn - k - 1;
+        if (remaining > 0) {
+            // 2. Update the panel (column below diagonal)
+            // Grid is 'remaining' blocks long, Threads Bw x Bw
+            Cholesky_Panel << <remaining, threads >> > (Ad, n, k, Bw);
+            if (cudaGetLastError()) Fatal("Panel kernel failed\n");
+
+            // 3. Update the trailing submatrix (GEMM update)
+            // Grid is 'remaining x remaining', Threads Bw x Bw
+            dim3 grid_gemm(remaining, remaining);
+            Cholesky_Update << <grid_gemm, threads >> > (Ad, n, k, Bw);
+            if (cudaGetLastError()) Fatal("Update kernel failed\n");
+        }
+    }
+
+    // Copy result back to host (L is stored in the lower triangle of Ad)
+    if (cudaMemcpy(Lh, Ad, N, cudaMemcpyDeviceToHost)) Fatal("Cannot copy result from device to host\n");
+
+    // Free device memory
+    cudaFree(Ad);
+}
+
+//generates random matrix valid for cholensky
+void generate_valid_matrix(int n, float A[]) {
+    srand(time(NULL));
+    float* temp = (float*)malloc(n * n * sizeof(float));
+
+    // 1. Fill flat temp matrix with random values
+    RandomInit(temp, n);
+
+    // 2. A = temp * temp_transpose
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            A[i * n + j] = 0; // Accessing A[i][j]
+            for (int k = 0; k < n; k++) {
+                // A[i][j] += temp[i][k] * temp[j][k]
+                A[i * n + j] += temp[i * n + k] * temp[j * n + k];
+            }
+        }
+    }
+
+    // 3. Boost diagonal for stability
+    for (int i = 0; i < n; i++) {
+        A[i * n + i] += 0.5;
+    }
+
+    free(temp);
+}
+
 //
 //  Main program
 //
@@ -120,24 +292,33 @@ int main(int argc, char* argv[])
 
    // Allocate host matrices A/B/C/R
    float* Ah = (float*)malloc(N);
-   float* Bh = (float*)malloc(N);
+   //float* Bh = (float*)malloc(N);
    float* Ch = (float*)malloc(N);
    float* Rh = (float*)malloc(N);
-   if (!Ah || !Bh || !Ch || !Rh) Fatal("Cannot allocate host memory\n");
+  // if (!Ah || !Bh || !Ch || !Rh) Fatal("Cannot allocate host memory\n");
+   if (!Ah || !Ch || !Rh) Fatal("Cannot allocate host memory\n");
 
    // Initialize A & B
    srand(9999);
-   RandomInit(Ah,n);
-   RandomInit(Bh,n);
+   //RandomInit(Ah,n);
+   //RandomInit(Bh,n);
+
+   //ensure it is good for cholensky
+   //multiply by its transpose
+   //add small value to diagonal
+   generate_valid_matrix(n, Ah);
+   //generate_valid_matrix(n, Bh);
 
    //  Compute R = AB on host
    Elapsed();
-   AxBh(Rh,Ah,Bh,n);
+   //AxBh(Rh,Ah,Bh,n);
+   localCholesky(n, Ah, Rh);
    double Th = Elapsed();
 
    //  Compute C = AB on device
    Elapsed();
-   AxBd(Ch,Ah,Bh,Bw,Bn);
+   //AxBd(Ch,Ah,Bh,Bw,Bn);
+   GPUCholensky(Ah, Ch, Bn, Bw);
    double Td = Elapsed();
 
    //  Compute difference between R and C
@@ -148,7 +329,7 @@ int main(int argc, char* argv[])
 
    //  Free host memory
    free(Ah);
-   free(Bh);
+   //free(Bh);
    free(Ch);
    free(Rh);
 

@@ -26,7 +26,7 @@ endif
 # Dependencies
 CSCIx239.h: mat4.h
 InitGPUcu.o: InitGPUcu.cu InitGPUcu.h
-hw11.o: hw11.cu CSCIx239.h InitGPUcu.h
+hw11.o: hw11.cu CSCIx239.h InitGPUcu.h matrixFactorization.cuh
 fatal.o: fatal.c CSCIx239.h
 errcheck.o: errcheck.c CSCIx239.h
 print.o: print.c CSCIx239.h
@@ -48,9 +48,10 @@ icosahedron.o: icosahedron.c CSCIx239.h
 teapot.o: teapot.c CSCIx239.h
 mat4.o: mat4.c CSCIx239.h
 initwin.o: initwin.c CSCIx239.h
+matrixFactorization.o: matrixFactorization.cu matrixFactorization.cuh CSCIx239.h
 
 #  Create archive
-CSCIx239.a:fatal.o errcheck.o print.o axes.o loadtexbmp.o loadobj.o projection.o lighting.o elapsed.o fps.o shader.o noise.o cube.o sphere.o cone.o cylinder.o torus.o icosahedron.o teapot.o mat4.o initwin.o
+CSCIx239.a:fatal.o errcheck.o print.o axes.o loadtexbmp.o loadobj.o projection.o lighting.o elapsed.o fps.o shader.o noise.o cube.o sphere.o cone.o cylinder.o torus.o icosahedron.o teapot.o mat4.o initwin.o matrixFactorization.o
 	ar -rcs $@ $^
 
 # Compile rules

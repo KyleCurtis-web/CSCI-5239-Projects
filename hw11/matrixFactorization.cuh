@@ -28,6 +28,18 @@ __global__ void Cholesky_Update(float* A, int n, int k_block, int Bw);
 void GPUCholesky(float* Ah, float* Lh, int Bn, int Bw);
 
 //generates random matrix valid for Cholesky
+//must be Symmetric, positive-definite
+//Symmetric: A=A trasnpose
+//Positive-Definite: all eigenvvalues are positive, or (equivalently) all diagonal elements in the decomposition are exclusively positive
 void generate_valid_matrix(int n, float A[]);
+
+// LU factorization
+void localLU(int n, const float A[], float L[], float U[]);
+
+//the kernal for solving a step of LU factorization
+__global__ void luStepKernel(int n, int i, double* A, double* L, double* U);
+
+// LU factorization solved with parallelization on the GPU
+void GPULU(const float A[], float L[], float U[], int Bn, int Bw);
 
 #endif // MATRIX_FACROTIZATION_CUH Guard end

@@ -175,7 +175,7 @@ void GPUCholesky(float* Ah, float* Lh, int Bn, int Bw)
             Cholesky_Panel << <remaining, threads >> > (Ad, n, k, Bw);
             if (cudaGetLastError()) Fatal("Panel kernel failed\n");
 
-            // 3. Update the trailing submatrix (GEMM update), calculates the sum used in the next pass, remove the first column from the remaining submatrix solution, we subtract this part of the summation
+            // 3. Update the trailing submatrix (GEMM update), remove the first column from the remaining submatrix solution, we subtract this part of the summation
             // Grid is 'remaining x remaining', Threads Bw x Bw
             dim3 grid_gemm(remaining, remaining);
             Cholesky_Update << <grid_gemm, threads >> > (Ad, n, k, Bw);
@@ -201,7 +201,7 @@ void generate_valid_matrix(int n, float A[]) {
     // 1. Fill temp matrix with random values
     RandomInit(temp, n);
 
-    // 2. A = temp * temp_transpose
+    // 2. A = temp * temp_transpose (guarentees that diagonal elements are positive)
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             A[i * n + j] = 0; // Accessing A[i][j]
@@ -222,5 +222,138 @@ void generate_valid_matrix(int n, float A[]) {
 
 
 //
-// SOMETHING ELSE
+// LU factorization
 //
+
+// LU factorization
+void localLU(int n, const float A[], float L[], float U[])
+{
+
+    // Upper Triangular (U)
+    //U[i][j] = a[i][j] - sum k to i-1 l_ik * u_kj
+    for (int i = 0; i < n; i++) 
+    {
+        for (int j = i; j < n; j++) 
+        {
+            double sum = 0;
+            for (int k = 0; k < i; k++)
+            {
+                sum += L[i * n + k] * U[k * n + j]; //sum to i-1 of L_ik * U_kj 
+            }
+            U[i * n + j] = A[i * n + j] - sum; //a[i][j] - sum
+        }
+
+        // Lower Triangular (L)
+        //L[i][j] = (1/u[j][j]) (a_ij - sum to j-1 L[i][k] * U[k][j]
+        for (int j = i; j < n; j++) 
+        {
+            if (i == j) 
+            {
+                L[i * n + i] = 1; //diagonal elements = 1
+            }
+            else 
+            {
+                double sum = 0;
+                for (int k = 0; k < i; k++)
+                {
+                    sum += L[j * n + k] * U[k * n + i]; //sum to i-1 of L_jk * L_ki 
+                }
+                L[j * n + i] = (A[j * n + i] - sum) / U[i * n + i]; // (a[i][j] - sum) / U[i][i]
+            }
+        }
+    }
+}
+
+//the kernal for solving a step of LU factorization
+__global__ void luStepKernel(int n, int i, float* A, float* L, float* U)
+{
+    //use the global thread index to determine j
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (j < n) //check that the thread doesn't accedentally try to access info outside of the matrix
+    {
+        // Upper Triangular (U)
+        //U[i][j] = a[i][j] - sum k to i-1 l_ik * u_kj
+        // Upper Triangular (U) calculation for Row i, Column j
+        if (j >= i)
+        {
+            double sum = 0;
+            for (int k = 0; k < i; k++)
+            {
+                sum += L[i * n + k] * U[k * n + j]; //sum to i-1 of L_ik * U_kj 
+            }
+            U[i * n + j] = A[i * n + j] - sum; //a[i][j] - sum
+        }
+
+        // Synchronize to ensure all U values for this step are written
+        __syncthreads();
+
+        // Lower Triangular (L)
+        //L[i][j] = (1/u[i][i]) (a_ji - sum to i-1 L[j][k] * U[k][i]
+        // Lower Triangular (L) calculation for Row j, Column i
+        if (j >= i)
+        {
+            if (i == j)
+            {
+                L[i * n + i] = 1.0; //diagonal values = 1
+            }
+            else
+            {
+                double sum = 0;
+                for (int k = 0; k < i; k++)
+                {
+                    sum += L[j * n + k] * U[k * n + i];//sum to i-1 of L_jk * L_ki 
+                }
+                L[j * n + i] = (A[j * n + i] - sum) / U[i * n + i]; // (a[i][j] - sum) / U[i][i]
+            }
+        }
+    }
+    //return __global__ void();
+}
+
+// LU factorization solved with parallelization on the GPU
+void GPULU(const float A[], float L[], float U[], int Bn, int Bw)
+{
+    // Calculate dimensions
+    int n = Bw * Bn;
+    int N = n * n * sizeof(float);
+
+    // Allocate device memory
+    float* Ad;
+    float* Ld;
+    float* Ud;
+    if (cudaMalloc((void**)&Ad, N)) Fatal("Cannot allocate device memory Ad\n");
+    if (cudaMalloc((void**)&Ld, N)) Fatal("Cannot allocate device memory Ld\n");
+    if (cudaMalloc((void**)&Ud, N)) Fatal("Cannot allocate device memory Ud\n");
+
+    // Copy A, L, and U to device
+    if (cudaMemcpy(Ad, A, N, cudaMemcpyHostToDevice)) Fatal("Cannot copy A from host to device\n");
+    if (cudaMemcpy(Ld, L, N, cudaMemcpyHostToDevice)) Fatal("Cannot copy L from host to device\n");
+    if (cudaMemcpy(Ud, U, N, cudaMemcpyHostToDevice)) Fatal("Cannot copy U from host to device\n");
+
+    // Define execution configurations
+    dim3 threads(Bw, Bw);
+    //dim3 grid(Bn, Bn);
+
+
+    for (int i = 0; i < n; i++)//outer loop is sequential
+    {
+        //perform a step
+        luStepKernel << <Bn, Bw >> > (n, i, Ad, Ld, Ud);
+
+        // Check for errors and synchronize
+        cudaDeviceSynchronize();
+    }
+
+    // Copy L from device to host
+    if (cudaMemcpy(L, Ld, N, cudaMemcpyDeviceToHost)) Fatal("Cannot copy L from device to host\n");
+
+    // Copy U from device to host
+    if (cudaMemcpy(U, Ud, N, cudaMemcpyDeviceToHost)) Fatal("Cannot copy U from device to host\n");
+
+
+    //  Free device memory
+    cudaFree(Ad);
+    cudaFree(Ld);
+    cudaFree(Ud);
+}

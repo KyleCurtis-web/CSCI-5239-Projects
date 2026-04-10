@@ -1,14 +1,56 @@
 homework 11
 
-Willem A. (Vlakkies) Schreuder
+Performs LU factorization and Cholesky factorization on random matrices
+
+Kyle Curtis
 CSCI4239/5239 Spring 2026
 
-Also takes a mode
+Usage: [-v] <block width> <number of blocks> <mode>
+Modes are:
+mode = 0 is matrix multiplication
+mode = 1 is cholesky factorization
+mode = 2 is LU factorization
 
 The size of the matrix is width*blocks
-
 
 Command line parameters
   -v      Verbose - show hardware detila
   width   Block width (width squared <= max threads/block)
   blocks  Number of blocks
+  mode	  what factorization
+
+
+  Results:
+  Cholesky:
+  The device quickly outpaces the host in cholesky. Even for bw = 16 we outpace the host, as long as we have a reasonable (i tested 32) number of blocks.
+  This gets really radical as we scale up the problem, for bw = 32 with only 16 blocks it gets a speedup of 2.2
+  When matrices get really big is where this shines: with bw = 32 and bn = 256 (n = 8192) it takes the host 96.4 seconds, and the device a mere 3.7 seconds. That's a speedup of 26.2
+
+  Even for a problem with some constraints on the parallelism (diagonals need to be done one at a time).
+  However, being able to calculate most of the summation in paralell really speeds it up, it effectevely eliminates a loop from the problem.
+
+  Basically, First you calculate the diagonal.
+  Second, you do the rest of the column all at once, because the last thing it was dependent on was the diagonal.
+  Lastly, you go through the rest of the matrix and do the part of the summation that depended on the current column. This is called the "Trailing Matrix Update"
+
+  Step 2 is a small speedup, we just do the column all at once, the big speedup comes from doing most of the summation ahead of time in step 3.
+
+  LU factorization:
+  Compared to Cholesky LU factorization performs similarly, but its not as good a slowdown, due to the inefficiencies between full LU and Cholesky (it's almost like Cholesky has a purpose)
+  For bw = 32 and bn=16 (n = 512) gets a 1.4 times speedup, but still only takes about 0.05 seconds to complete.
+  For bw = 32 and bn = 256 (n = 8192) it took the host 1545.3 seconds to calculate, and the device took 11.5 for a speedup of 134
+  Similarly to Cholesky, we have to do the diagonals sequentially, so its not ideal for parallelism.
+  However, with what we are able to do, running the sum in paralell, it still eliminates a for loop from the problem, creating a huge speedup.
+  Even if its not Cholesky, adding parallelism to this problem has a huge impact on the calculation time
+
+  The LU kernal functions similarly.
+  First step: we solve for the Upper Matrix's current row, which has had all its work done previously, so we can calculate all at once. This step also includes the diagonal that the lower matrix needs.
+  Second step: synchronize, wait until the pivot has been calculated, before we can do the lower matrix.
+  Third step: now we calculate the Lower Matrix's current column, it depended on the pivot(diagonal) from the upper matrix, but all other values have already been calculated so we can now do them all at once.
+
+  We keep iterating over the matrix until we have gone over all rows/columns in LU. 
+
+  So basically we run step 2 from Cholesky twice, once for L and U.
+
+
+  Spent about 13 hours on this project

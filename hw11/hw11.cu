@@ -12,8 +12,8 @@
 #include "InitGPUcu.h"
 #include "matrixFactorization.cuh"
 
-const char* modes[] = {"Matrix Multiplication", "Cholesky Factorization"};
-char argumentString[] = "<mode>\nModes are:\n0: matrix multiplication\n1: Cholesky Factorization\n";
+const char* modes[] = {"Matrix Multiplication", "Cholesky Factorization", "LU Factorization"};
+char argumentString[] = "Usage: [-v] <block width> <number of blocks> <mode>\nModes are:\n0: matrix multiplication\n1: Cholesky Factorization\n2: LU Factorization\n";
 
 //
 // C = A * B -- host
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
    argv += optind;
 
    int mode = 0;//which matrix operation is being performed
-   int numModes = 1;
+   int numModes = 2;
  
    //  Get width and number of blocks
    if (argc < 2 || argc > 3)
@@ -178,6 +178,60 @@ int main(int argc, char* argv[])
        printf("Device Time = %6.3f s\n", Td);
        printf("Speedup = %.1f\n", Th / Td);
        printf("Difference = %.2e\n", r2);
+   }
+   else if (mode == 2)//LU factorization
+   {
+       // Allocate host matrices A/B/C/R
+       float* Ah = (float*)malloc(N);
+       float* localL = (float*)calloc(n * n, sizeof(float)); // All entries are 0.0
+       float* localU = (float*)calloc(n * n, sizeof(float));
+       float* GPUL = (float*)calloc(n * n, sizeof(float));
+       float* GPUU = (float*)calloc(n * n, sizeof(float));
+       if (!Ah || !localL || !GPUL || !localU || !GPUU) Fatal("Cannot allocate host memory\n");
+
+       // Initialize A
+       srand(9999);
+
+       //generate a random matrix
+       RandomInit(Ah, n);
+
+
+       //  Compute cholesky on host
+       Elapsed();
+       localLU(n, Ah, localL, localU);
+       double Th = Elapsed();
+
+       //  Compute cholesky on device
+       Elapsed();
+       //localLU(n, Ah, localL, localU);
+       GPULU(Ah, GPUL, GPUU, Bn, Bw);
+       double Td = Elapsed();
+
+       //  Compute difference between U
+       double Udifference = 0;
+       for (int i = 0; i < n * n; i++)
+           Udifference += fabs(GPUU[i] - localU[i]);
+       Udifference /= n * n;
+
+       //  Compute difference between L
+       double Ldifference = 0;
+       for (int i = 0; i < n * n; i++)
+           Ldifference += fabs(GPUL[i] - localL[i]);
+       Ldifference /= n * n;
+
+       //  Free host memory
+       free(Ah);
+       free(localL);
+       free(localU);
+       free(GPUL);
+       free(GPUU);
+
+       //  Print results
+       printf("Host   Time = %6.3f s\n", Th);
+       printf("Device Time = %6.3f s\n", Td);
+       printf("Speedup = %.1f\n", Th / Td);
+       printf("U Difference = %.2e\n", Udifference);
+       printf("L Difference = %.2e\n", Ldifference);
    }
    else //matrix multiplication
    {

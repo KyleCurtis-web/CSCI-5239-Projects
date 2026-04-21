@@ -1,0 +1,84 @@
+#  Hello World in PBRT-v4
+#  Transparent sphere on checkerboard floor
+#  For more detail about each parameter see
+#    https://www.pbrt.org/fileformat-v4.html
+
+#  Ray tracing controls
+Sampler "halton"                 #  Halton sampler (default)
+   "integer pixelsamples" [128]  #  Samples per pixel
+Integrator "path"                #  Integrate along path
+   "integer maxdepth"      [8]   #  Max length of path
+
+#  Projection
+LookAt 5.0 6.0 1.5  # Eye position
+       0.5 0.5 0.0  # Look at point
+        0   0   1   # Up vector
+Camera "perspective"
+   "float fov" [45]
+
+#  Output
+Film "rgb"
+   "integer xresolution" [512]      #  Width
+   "integer yresolution" [512]      #  Height
+   "string filename" ["ex27-4.png"] #  Output file name
+
+#
+#  Scene description
+#
+WorldBegin
+
+# Uniform baby blue illumination from all directions
+LightSource "infinite"
+   "rgb L" [0.0 0.3 0.8]
+
+# Approximate the sun
+LightSource "distant"
+   "point3 from"  [-30 40 100]
+   "float scale" [1.5]
+   "blackbody L" [3000]
+
+# Transparent glass sphere radius 1 at the origin
+AttributeBegin
+   Material "dielectric"
+   Shape "sphere" "float radius" [1]
+AttributeEnd
+
+# Plastic oval
+AttributeBegin
+   Material "coateddiffuse"
+      "rgb reflectance" [0.4 0.2 0.2]
+      "float roughness" [0.025]
+   Translate -5 -2 0
+   Scale 0.7 0.7 1.0
+   Shape "sphere" "float radius" 1
+AttributeEnd
+
+# Silver ball
+AttributeBegin
+   Material "conductor"
+      "float roughness" [ 0 ]
+      "spectrum eta" [ "metal-Ag-eta" ]
+      "spectrum k" [ "metal-Ag-k" ]
+   Translate 0 -5 0
+   Shape "sphere" "float radius" 1
+AttributeEnd
+
+#  Red and yellow 8x8 checkerboard floor at z=-1
+AttributeBegin
+   #  8x8 yellow/red checkerboard texture named cbtex
+   Texture "cbtex" "spectrum" "checkerboard"
+      "float uscale" [8]
+      "float vscale" [8]
+      "rgb tex1" [1.0 1.0 0.0]
+      "rgb tex2" [1.0 0.0 0.0]
+   #  Matte material with cbtex as texture
+   Material "diffuse"
+      "texture reflectance" "cbtex"
+   #  Offset quad -1 in Z direction
+   Translate 0 0 -1
+   #  40x40 quad centered on origin made up of two triangles
+   Shape "trianglemesh"
+      "integer indices" [0 1 2   0 2 3]                           #  Triangle indices (0,1,2) and (0,2,3)
+      "point3 P"  [-20 -20 0   +20 -20 0   +20 +20 0   -20 +20 0]  #  Vertex 0 .. 3
+      "point2 uv" [0 0         1 0         1 1         0 1 ]       #  Texture coordinates 0 .. 3
+AttributeEnd

@@ -1,0 +1,6 @@
+hw 12: Ray Tracing
+
+
+you need to change PBRT in the makefile into whatever the path to your PBRT-v4 is
+
+time spent: 3 hours

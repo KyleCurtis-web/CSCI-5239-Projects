@@ -1,7 +1,9 @@
 import bpy
 
+#this is to be run in blender
+
 # Set your OBJ filepath
-file_path = r"C:\Users\metalmonstr\Downloads\dataSplitter\Meeple.obj"
+file_path = r"Meeple.obj"
 bpy.ops.wm.obj_import(filepath=file_path)
 
 obj = bpy.context.active_object

@@ -1,6 +1,9 @@
 import re
 import sys
 
+# splits a .txt file that has vertex, normal, and uv coordinates listed as [XYZ NXNYNZ UV]
+# and returns the results as three seperate lists
+
 def convert_to_pbrt(filepath):
     try:
         with open(filepath, 'r') as f:

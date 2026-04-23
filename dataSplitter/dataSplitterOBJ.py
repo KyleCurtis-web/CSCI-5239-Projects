@@ -2,6 +2,8 @@ import bpy
 
 #this is to be run in blender
 
+#takes an obj and returns three lists of the vertex coordinates, normals, and uv coordinates
+
 # Set your OBJ filepath
 file_path = r"Meeple.obj"
 bpy.ops.wm.obj_import(filepath=file_path)

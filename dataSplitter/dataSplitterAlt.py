@@ -1,6 +1,9 @@
 import re
 import sys
 
+# takes a file with alternating lines of vertex coordinates and normal coordinates
+# and returns the results as two seperate lists
+
 def convert_alt_to_pbrt(filepath):
     positions = []
     normals = []
